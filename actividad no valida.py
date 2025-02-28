@@ -4,4 +4,3 @@ gasto_en_vegetales = float(input("Ingrese cuanto dinero se va gastar en comprar 
 gasto_en_carne = float(input("Ingres cuanto dinero se va gastar en comprar las carnes"))
 gasto_en_especia = float(input("Ingrese cuanto dinero se gastara en las especias"))
 total_de_Gasto = gasto_en_carne + gasto_en_vegetales + gasto_en_especia
-while total_de_Gasto==Presupuesto or total_de_Gasto > Presupuesto:
