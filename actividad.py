@@ -1,3 +1,4 @@
+#Calcular licencias
 precio_licencia = 0
 total_licencias = 0
 presupuesto = 0
