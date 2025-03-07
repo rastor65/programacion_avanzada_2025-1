@@ -1,3 +1,4 @@
+print("Hola!!")
 presupuesto = float(input("Ingrese su presupuesto: "))
 precio = float(input("Ingrese el precio de las licencias, por favor: "))
 
