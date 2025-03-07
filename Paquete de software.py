@@ -8,4 +8,4 @@ if total_de_compra == presupuesto_escuela or total_de_compra>presupuesto_escuela
 elif total_de_compra<presupuesto_escuela:
     presupuesto_restante = presupuesto_escuela - total_de_compra
     licencias_adicionales = presupuesto_restante // valor_licen
-    print(f"Se puede comprar",{int(licencias_adicionales)} ,"licencias adicionales")
+    print(f"Se puede comprar",{int(licencias_adicionales)} ,"licencia adicionales")
