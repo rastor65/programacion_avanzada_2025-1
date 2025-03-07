@@ -1,4 +1,3 @@
-# Solicitar nombre de usuario
 nombre = input("Ingresa el nombre: ")
 if 3 < len(nombre) < 8:
     print("Hola " + nombre.upper())
