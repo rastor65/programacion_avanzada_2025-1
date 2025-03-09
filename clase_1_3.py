@@ -1,5 +1,12 @@
-nombre = input("Ingresa el nombre: ")
-if 3 < len(nombre) < 8:
-    print("Hola " + nombre.upper())
+#Pagina 30
+comentario_=(input("Ingrese el comentario del cliente: "))
+minus_= comentario_.lower()
+contar_= comentario_.count("excelente")
+espacio_= comentario_.strip()
+
+if minus_ == comentario_ :
+    print("El texto se encuentra en minusculas")
 else:
-    print("El nombre debe tener entre 4 y 7 caracteres.")
+    print("El texto en minusculas es: ",minus_)
+
+print("El numero de veces que se repite 'excelente' es: ",contar_)

@@ -1,6 +1,5 @@
-presupuesto=float(input("Ingresa cuanta plata tienes"))
-Carne=float(input("¿Cuanto te gastaste en la carne?"))
-Verdura=float(input("¿Cuanto te gastaste en la verdura?"))
-fruta=float(input("¿Cuanto te gastaste en la fruta?"))
-
-total= Carne+Verdura+fruta 
+#pagina 31
+texto= str(input("Ingresa el articulo: "))
+reempleazar_ = texto.replace("tecnologia antigua", "tecnologia de punta")
+separar_= reempleazar_.split(".")
+print(reempleazar_,separar_)
