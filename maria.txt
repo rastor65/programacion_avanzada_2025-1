@@ -1,3 +1,4 @@
+1.
 presupuesto=float(input("ingrese su presupuesto:"))
 print(f"Su presupuesto para las compras es : {presupuesto}")
 vegetales=float(input("ingrese el costo de lo que compro en vegetales :"))
@@ -14,3 +15,81 @@ if total<=presupuesto:
  print(f"Le quedo un saldo de: {restante_final}")
 else:
  print(f"Su compra total fue:{total}. ha excedido su presupuesto")
+
+
+2.
+precio_licencia = float(input("ponga el precio de cada licencia: "))
+presupuesto = float(input("ponga el presupuesto total de la escuela: "))
+licencias_planeadas = int(input("ponga la cantidad de licencias planeadas: "))
+costo_planeado = licencias_planeadas * precio_licencia
+if costo_planeado > presupuesto:
+    print("El presupuesto es insuficiente para la cantidad de licencias planeadas.")
+else:
+    presupuesto_restante = presupuesto - costo_planeado
+    licencias_adicionales = int(presupuesto_restante / precio_licencia)
+    if licencias_adicionales > 0:
+        print(f"Con el presupuesto restante se pueden comprar {licencias_adicionales} licencias adicionales.")
+    else:
+        print("No se pueden comprar licencias adicionales.")
+
+3.
+total_estudiantes = int(input("ponga el número total de estudiantes: "))
+estudiantes_por_equipo = int(input("ponga la cantidad de estudiantes por equipo: "))
+equipos_completos = total_estudiantes // estudiantes_por_equipo
+print(f"Se pueden formar {equipos_completos} equipos completos.")
+
+4.
+lapices = 32
+estudiantes = int(input("ponga la cantidad de estudiantes: "))
+sobrantes = lapices % estudiantes
+print(f"Al profesor le sobran {sobrantes} lápices después de repartirlos.")
+
+5.
+lado =int(input("ingrese la medida del lado del cuadrado:"))
+area_rectangulo =lado*lado
+print(f"El area del rectangulo es: {area_rectangulo}")
+
+6.
+e_usuario = input("ponga su nombre de usuario: ")
+if len(nombre_usuario) > 3 and len(nombre_usuario) < 8:
+    print(f"¡Hola, {nombre_usuario.upper()}! Bienvenido a la plataforma.")
+else:
+    print("El nombre de usuario debe tener más de 3 caracteres y menos de 8.")
+
+
+7.
+def analizar():
+ comentario = input("Ingresa el comentario del cliente: ")
+ comentario_limpio = comentario.strip()
+
+ if comentario_limpio == "salir":
+  print("finalizado el analisis de comentarios.")
+  break
+veces_excelente = comentario_minusculas.count("excelente")
+comentario_minusculas = comentario_limpio.lower()
+ print(f"\nComentario procesado: {comentario_minusculas}")
+ print(f"La palabra 'excelente' aparece {veces_excelente} veces.")
+analizar()
+
+8.
+def corregir_articulo(articulo):
+    articulo_corregido = articulo.replace("tecnología antigua", "tecnología avanzada")
+
+    oraciones = articulo_corregido.split(".")
+    print("articulo corregido:")
+    for oracion in oraciones:
+        if oracion.strip():
+           print(f"- {oracion.strip()}.")
+
+texto = "ahora mismo la tecnologia antigua  es poco eficiente. La nueva tecno9logia es la que debemos usar. no, nos limitemos a la tecnologia antigua."
+
+corregir_articulo(texto)
+
+
+9.
+codigo = input("ponga el código del producto: ")
+codigo = codigo.upper()
+if codigo.startswith("PRO"):
+    print("Código válido")
+else:
+    print("Código inválido")
