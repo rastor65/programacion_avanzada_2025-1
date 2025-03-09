@@ -1,0 +1,16 @@
+presupuesto=float(input("ingrese su presupuesto:"))
+print(f"Su presupuesto para las compras es : {presupuesto}")
+vegetales=float(input("ingrese el costo de lo que compro en vegetales :"))
+carne=float(input("ingrese el costo de lo que compro en carne :"))
+especias=float(input("ingrese el costo de lo que compro en especias :"))
+total=vegetales+carne+especias
+restante=presupuesto-total
+if total<=presupuesto:
+ print("aun tiene dinero disponible para comprar fruta.")
+ frutas=float(input("ingrese el costo de las frutas?:"))
+ total_final = total+frutas  
+ restante_final= presupuesto - total_final
+ print(f"el total de su compra fue: {total_final}")
+ print(f"Le quedo un saldo de: {restante_final}")
+else:
+ print(f"Su compra total fue:{total}. ha excedido su presupuesto")
