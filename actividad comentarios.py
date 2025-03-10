@@ -1,0 +1,6 @@
+Comentario = input("Ingrese el comentario que desea dejar: ")
+Comentario = Comentario.strip()
+Comentario = Comentario.lower()
+Cont_Exelente = Comentario.count("excelente")
+print("El comentario que dejo es el siguiente: ",Comentario)
+print(f"Repitio la palabra Excelente {Cont_Exelente} veces")
