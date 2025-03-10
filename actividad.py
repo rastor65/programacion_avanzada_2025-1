@@ -57,11 +57,47 @@ print(f"El área  es {area}.")"""
 
 #6.
 
-nombre = input("Ingrese un nombre de usuario")
+"""nombre = input("Ingrese un nombre de usuario")
 
 if 3 < len(nombre) < 8:
     
     print(f"¡Hola, {nombre.upper()}!")
 else:
-    print("El nombre debe tener entre 4 y 7 caracteres.")
+    print("El nombre debe tener entre 4 y 7 caracteres.")"""
+
+#7.
+
+"""comentario = input("Ingrese el comentario ")
+
+comentario = comentario.strip()
+
+comentario_minusculas = comentario.lower()
+
+cantidad_excelente = comentario_minusculas.count("excelente")
+
+print(f"{comentario_minusculas}")
+print(f'La palabra "excelente" aparece {cantidad_excelente} veces.')"""
+
+#8.
+
+"""articulo = input("Ingrese el artículo: ")
+
+articulo_corregido = articulo.replace("tecnología antigua", "tecnología de punta")
+
+oraciones = articulo_corregido.split(".")
+
+print("\nArtículo  nuevo:")
+print(articulo_corregido)"""
+
+#9. 
+
+
+"""codigo = input("Ingrese el código : ")
+codigo = codigo.upper()
+
+if codigo.startswith("PRO"):
+    print("Código válido")
+else:
+    print("Código inválido")"""
+
 
