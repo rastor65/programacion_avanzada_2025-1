@@ -1,0 +1,5 @@
+comentario = input("Ingrese el comentario del cliente: ")
+comentario_procesado = comentario.strip().lower()
+cantidad_excelente = comentario_procesado.count("excelente")
+print(f"\nComentario procesado: {comentario_procesado}")
+print(f'La palabra "excelente" aparece {cantidad_excelente} veces.')
