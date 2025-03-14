@@ -17,12 +17,12 @@ def calcular_edad (edad):
 
 def tablaDeMultiplicar (n, o):
     if o == 1:
-        for i in range(12):
-            print(f"{n} X {i+1} = {n*(i+1)}")
+        for i in range(1, 12):
+            print(f"{n} X {i} = {n*(i)}")
     else:
         lista = ""
-        for i in range(12):
-            lista += f"{n} X {i+1} = {n*(i+1)}\t"
+        for i in range(1, 12):
+            lista += f"{n} X {i} = {n*(i)}\t"
         print(lista)
 numero = int(input("Ingresa un numero: "))
 if numero < 1:
