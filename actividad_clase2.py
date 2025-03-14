@@ -1,5 +1,5 @@
 import sys
-
+import math
 def calcular_edad (edad):
     if edad < 0:
         return print("Edad no disponible.")
@@ -24,6 +24,7 @@ def tablaDeMultiplicar (n, o):
         for i in range(1, 12):
             lista += f"{n} X {i} = {n*(i)}\t"
         print(lista)
+""""        
 numero = int(input("Ingresa un numero: "))
 if numero < 1:
     print("Ingresa solo numeros enteros positivos.")
@@ -33,3 +34,20 @@ if orientacion != 1 and orientacion != 2:
     print("Opcion no disponible (1 o 2).")
 else:   
     tablaDeMultiplicar(numero, orientacion)
+"""
+
+def es_primo (numero):
+    if numero <= 1:
+        return False
+    for i in range (2, int(math.sqrt(numero) +1)):
+        if numero % i == 0:
+            return False
+    return True
+
+def imprimir_numeros_primos (limite):
+    for i in range (2, limite + 1):
+        if es_primo(i):
+            print(i)
+
+numero = int(input("Ingresa el numero: "))
+imprimir_numeros_primos(numero)
