@@ -93,3 +93,143 @@ if codigo.startswith("PRO"):
     print("Código válido")
 else:
     print("Código inválido")
+
+
+ejercicio 1.
+
+edad = int(input("¿Cuántos años tienes? "))
+
+if 0 <= edad <= 12:
+    print("Eres un niño. ¡Sigue disfrutando de tu niñez, el futuro es brillante!")
+elif 13 <= edad <= 17:
+    print("Eres un adolescente. ¡Aprovecha esta etapa para descubrir lo que te apasiona!")
+elif 18 <= edad <= 64:
+    print("Eres un adulto. ¡Sigue esforzándote y alcanzando tus metas!")
+else:
+    print("Eres un adulto mayor. ¡La experiencia es tu mayor tesoro, sigue compartiendo tu sabiduría!")
+
+
+ejercicio 2.
+
+numero = int(input("Introduce el número para generar su tabla de multiplicar: "))
+
+
+formato = input("¿Deseas la tabla en formato horizontal (h) o vertical (v)? ").lower()
+
+if formato == 'h':
+    
+    print(f"Tabla de multiplicar del {numero} en formato horizontal:")
+    for i in range(1, 13):
+        print(f"{numero} x {i} = {numero * i}", end="\t")
+    print() 
+
+elif formato == 'v':
+    
+    print(f"Tabla de multiplicar del {numero} en formato vertical:")
+    for i in range(1, 13):
+        print(f"{numero} x {i} = {numero * i}")
+
+else:
+    print("Opción no válida. Elige 'h' para horizontal o 'v' para vertical.")
+
+
+ejercicio 3.
+
+
+import math
+
+def es_primo(n):
+    
+    if n <= 1:
+        return False
+    if n <= 3:
+        return True
+    
+    if n % 2 == 0 or n % 3 == 0:
+        return False
+    
+    
+    for i in range(5, int(math.sqrt(n)) + 1, 6):
+        if n % i == 0 or n % (i + 2) == 0:
+            return False
+    return True
+
+
+numero = int(input("Introduce un número para verificar si es primo: "))
+if es_primo(numero):
+    print(f"{numero} es un número primo.")
+else:
+    print(f"{numero} no es un número primo.")
+
+
+ejercicio 4.
+
+
+numeros_pares = [i * 2 for i in range(1, 21)]
+
+suma_total = sum(numeros_pares)
+
+print("Los primeros 20 números pares son:", numeros_pares)
+print("La suma total de los números pares es:", suma_total)
+
+
+ejercicio 5.
+
+
+
+calificaciones_input = input("Ingresa las calificaciones de los estudiantes, separadas por comas: ")
+
+calificaciones = [float(calificacion) for calificacion in calificaciones_input.split(',')]
+
+
+promedio = sum(calificaciones) / len(calificaciones) if calificaciones else 0
+
+
+calificacion_maxima = max(calificaciones)
+calificacion_minima = min(calificaciones)
+
+aprobados = len([cal for cal in calificaciones if cal >= 3.0])
+
+
+print(f"\nPromedio de calificaciones: {promedio:.2f}")
+print(f"Calificación más alta: {calificacion_maxima}")
+print(f"Calificación más baja: {calificacion_minima}")
+print(f"Estudiantes aprobados: {aprobados}")
+
+
+ejercicio 6.
+
+
+import random
+import string
+
+def generar_contraseña(longitud):
+    
+    caracteres = string.ascii_letters + string.digits + string.punctuation
+    
+    while True:
+        contraseña = ''.join(random.choice(caracteres) for _ in range(longitud))
+        
+        if (any(c.islower() for c in contraseña) and
+            any(c.isupper() for c in contraseña) and
+            any(c.isdigit() for c in contraseña) and
+            any(c in string.punctuation for c in contraseña)):
+            break
+    
+    return contraseña
+
+longitud = int(input("Introduce la longitud de la contraseña deseada: "))
+
+contraseña_segura = generar_contraseña(longitud)
+print(f"Contraseña segura generada: {contraseña_segura}")
+
+
+
+
+
+
+
+
+
+
+
