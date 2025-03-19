@@ -1,4 +1,5 @@
 edad = int(input("Hola!, ingrese su edad por favor: "))
+
 if edad >0 and  edad<=12:
     print("Usted es un niño")
     print("De los niños es el reino de los cielos!")
