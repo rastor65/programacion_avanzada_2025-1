@@ -13,3 +13,4 @@ if edad >0 and  edad<=12:
                     print("vuetros ancianos soñaran sueños,")
 else:
     print("Información no valida...")
+    print("Verifique su edad...")
