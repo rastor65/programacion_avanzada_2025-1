@@ -38,13 +38,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'usuarios',
-    'asistencias',
-    'notificaciones',
-    'comportamiento',
-    'notas',
-
+    'usuarios', # Esta app no se utiliza, pero se deja para referencia
+    'rest_framework', # Django REST Framework
+    'rest_framework_simplejwt', # JWT Authentication
+    'asistencias', # Aplicación de asistencias
+    'autenticacion', # Aplicación de autenticación
+    'notificaciones', # Aplicación de notificaciones
+    'comportamiento', # Aplicación de comportamiento
+    'notas', # Aplicación de notas
 ]
 
 MIDDLEWARE = [
@@ -55,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'autenticacion.middleware.JWTAuthCookieMiddleware', # Middleware personalizado
 ]
 
 ROOT_URLCONF = 'sistema_moderno.urls'
@@ -133,7 +135,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Configuración de Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.simplejwt.authentication.JWTAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
