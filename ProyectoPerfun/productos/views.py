@@ -1,8 +1,10 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+
+def inicio(request):
+    return render(request, 'inicio.html')
+from .models import Perfume
 
 def lista_perfumes(request):
-    return HttpResponse("Hola, esta es la lista de perfumes.")
-
-
+    perfumes = Perfume.objects.all()
+    return render(request, 'productos/lista_perfumes.html', {'perfumes': perfumes})
 # Create your views here.
