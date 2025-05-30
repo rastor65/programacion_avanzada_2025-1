@@ -3,6 +3,7 @@ from .views import *
 from .views import CookieLoginView
 
 urlpatterns = [
+    path('hello/', HelloFromCookieView.as_view(), name = 'hello'),
     path('roles/', RolListCreateView.as_view(), name='rol_list_create'),
     path('roles/<int:pk>/', RolRetrieveUpdateDestroyView.as_view(), name='rol_detail'),
     path('register/', RegisterView.as_view(), name='register'),

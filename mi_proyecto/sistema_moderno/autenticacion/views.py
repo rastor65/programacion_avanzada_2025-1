@@ -58,7 +58,7 @@ class RegisterView(generics.CreateAPIView):
 class UsuarioRolCreateView(generics.ListCreateAPIView):
     queryset = UsuarioRol.objects.all()
     serializer_class = UsuarioRolSerializer
-    permission_classes = [permisos.IsAuthenticated, IsAdminRole]  
+    permission_classes = [permisos.IsAuthenticated, IsAdminRole]    
 
 
 # Views IA

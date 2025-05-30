@@ -24,6 +24,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/autenticacion/', include('autenticacion.urls')),
     path('usuarios/', UsuarioListView.as_view(), name='usuarios-list-create'),
-    path('usuarios/<int:pk>/', UsuarioRetrieveUpdateDestroyView.as_view(), name='usuarios-detail'), 
+    path('usuarios/<int:pk>/', UsuarioRetrieveUpdateDestroyView.as_view(), name='usuarios-detail'),     
 ]
 
