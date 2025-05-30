@@ -8,6 +8,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .permisos import IsAdminRole
 from django.http import JsonResponse 
 from rest_framework.views import APIView
+from rest_framework import generics, permisos, status
+from .models import Usuario
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 # Views en clases
 class RolListCreateView(generics.ListCreateAPIView):
@@ -60,6 +63,10 @@ class UsuarioListView(generics.ListAPIView):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
     permission_classes = [IsAuthenticated, IsAdminRole]  # Solo administradores pueden ver la lista de usuarios
+    
+class UsuarioRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Usuario.objects.all()
+    serializer_class = UsuarioSerializer
 
 # LogoutView:
 class LogoutView(generics.GenericAPIView):
@@ -76,13 +83,40 @@ class CookieLoginView(APIView):
         password = request.data.get('password')
         user = authenticate(request, username=username, password=password)
 
-        if user:
-            refresh = RefreshToken.for_user(user)
-            response = JsonResponse({"mensaje": "Inicio de sesión exitoso"})
-            response.set_cookie('access_token', str(refresh.access_token), httponly=True)
-            return response
-        else:
-            return JsonResponse({"error": "Credenciales inválidas"}, status=401)
+        if user is None:
+            return Response({"detail": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+        refresh_token = str(refresh)
+
+        response = Response({
+            "message": "Autenticación con cookies exitosa",
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+            }
+        })
+
+        response.set_cookie(key='access_token', value=access_token, httponly=True, secure=False, samesite='Lax', max_age=60 * 60,)
+        response.set_cookie(key='refresh_token', value=refresh_token, httponly=True, secure=False, samesite='Lax', max_age=60 * 60 * 24,)
+
+        return response
+    
+# VERIFICACION DE AUTENTICACION
+class HelloFromCookieView(APIView):
+    def get(self, request):
+        access_token = request.COOKIES.get('access_token')
+
+        if not access_token:
+            return Response({"detail": "No se encontró el token en cookies"}, status=401)
+        
+        jwt_authenticator = JWTAuthentication()
+
+        try:
+            validated_user, token = jwt_authenticator.authenticate(request._request) 
+        except Exception as e:
 
 
 # Create your views here.
