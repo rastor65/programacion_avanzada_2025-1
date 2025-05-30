@@ -1,4 +1,3 @@
-from rest_framework import generics, status
 from serializer.serializers import *
 from .models import *
 from rest_framework.response import Response
@@ -8,7 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .permisos import IsAdminRole
 from django.http import JsonResponse 
 from rest_framework.views import APIView
-from rest_framework import generics, permisos, status
+from rest_framework import generics, permissions, status
 from .models import Usuario
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
@@ -16,14 +15,14 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 class RolListCreateView(generics.ListCreateAPIView):
     queryset = Rol.objects.all()
     serializer_class = RolSerializer
-    permission_classes = [permisos.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
 
 
 class RolRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Rol.objects.all()
     serializer_class = RolSerializer
-    permission_classes = [permisos.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
 
 # Views en la casa
@@ -58,7 +57,7 @@ class RegisterView(generics.CreateAPIView):
 class UsuarioRolCreateView(generics.ListCreateAPIView):
     queryset = UsuarioRol.objects.all()
     serializer_class = UsuarioRolSerializer
-    permission_classes = [permisos.IsAuthenticated, IsAdminRole]    
+    permission_classes = [permissions.IsAuthenticated, IsAdminRole]    
 
 
 # Views IA
