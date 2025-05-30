@@ -1,1 +1,0 @@
-valor_licen = float(input("INgrese el valor de las licensia de software"))
