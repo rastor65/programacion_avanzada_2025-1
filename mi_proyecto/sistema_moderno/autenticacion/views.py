@@ -16,10 +16,14 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 class RolListCreateView(generics.ListCreateAPIView):
     queryset = Rol.objects.all()
     serializer_class = RolSerializer
+    permission_classes = [permisos.IsAuthenticated]
+
+
 
 class RolRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Rol.objects.all()
     serializer_class = RolSerializer
+    permission_classes = [permisos.IsAuthenticated]
 
 
 # Views en la casa
@@ -54,7 +58,7 @@ class RegisterView(generics.CreateAPIView):
 class UsuarioRolCreateView(generics.ListCreateAPIView):
     queryset = UsuarioRol.objects.all()
     serializer_class = UsuarioRolSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]  
+    permission_classes = [permisos.IsAuthenticated, IsAdminRole]  
 
 
 # Views IA
@@ -117,6 +121,22 @@ class HelloFromCookieView(APIView):
         try:
             validated_user, token = jwt_authenticator.authenticate(request._request) 
         except Exception as e:
+            return Response({"detail": f"Token inválido: {str(e)}"}, status=401)
+        
+        return Response({ 
+            "message": f" Hola, {validated_user.username}, estas autenticado <3"
+        })
+    
+# CERRAR SESION
+class LogoutView(APIView):
+    def post(self, request):
+        response = Response({"message": "Sesión cerrada correctamente."})
+
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
+
+        return response
+
 
 
 # Create your views here.
