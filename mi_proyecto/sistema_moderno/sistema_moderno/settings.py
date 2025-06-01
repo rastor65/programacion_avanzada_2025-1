@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'usuarios', # Esta app no se utiliza, pero se deja para referencia
     'rest_framework', # Django REST Framework
     'rest_framework_simplejwt', # JWT Authentication
     'asistencias', # Aplicación de asistencias
