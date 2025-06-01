@@ -26,7 +26,7 @@ class Rol(models.Model):
 
 # Usuario:
 class Usuario(TimeStampedModel): 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil', verbose_name="Usuario de autenticación")
     rol = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True, blank=True)
 
 
@@ -46,6 +46,8 @@ class Usuario(TimeStampedModel):
 # UsuarioRol:
 
 class UsuarioRol(models.Model):
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='roles_asignados')
+    rol = models.ForeignKey(Rol, on_delete=models.CASCADE, related_name='usuarios_asignados')
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='roles_asignados')
     rol = models.ForeignKey(Rol, on_delete=models.CASCADE, related_name='usuarios_asignados')
     asignado_en = models.DateTimeField(auto_now_add=True)

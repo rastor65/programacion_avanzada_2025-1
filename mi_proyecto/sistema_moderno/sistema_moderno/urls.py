@@ -29,4 +29,7 @@ urlpatterns = [
     path('usuarios/', UsuarioListView.as_view(), name='usuario_list_create'),
     path('usuarios/<int:pk>/', UsuarioRetrieveUpdateDestroyView.as_view(), name='usuario_detail'),
     path('api/autenticacion/', include('autenticacion.urls')),
+    path('usuarios/', UsuarioListView.as_view(), name='usuarios-list-create'),
+    path('usuarios/<int:pk>/', UsuarioRetrieveUpdateDestroyView.as_view(), name='usuarios-detail'),     
 ]
+

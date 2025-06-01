@@ -23,7 +23,6 @@ class RolSerializer(serializers.ModelSerializer):
 # UsuarioSerializer:
 
 class UsuarioSerializer(serializers.ModelSerializer):
-
     rol_nombre = serializers.CharField(source='rol.nombre', read_only=True)
     rol_id = serializers.IntegerField(source='rol.id', read_only=True)
     roles = serializers.SerializerMethodField()
@@ -92,6 +91,5 @@ class UsuarioRolSerializer(serializers.ModelSerializer):
 class LoginSerializer(TokenObtainPairSerializer):
     username = serializers.CharField()
     password = serializers.CharField()
-
 
 
