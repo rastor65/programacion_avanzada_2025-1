@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'notificaciones', # Aplicación de notificaciones
     'comportamiento', # Aplicación de comportamiento
     'notas', # Aplicación de notas
+    'asignaturas', # Aplicación de asignaturas
 ]
 
 MIDDLEWARE = [

@@ -30,6 +30,8 @@ urlpatterns = [
     path('usuarios/<int:pk>/', UsuarioRetrieveUpdateDestroyView.as_view(), name='usuario_detail'),
     path('api/autenticacion/', include('autenticacion.urls')),
     path('usuarios/', UsuarioListView.as_view(), name='usuarios-list-create'),
-    path('usuarios/<int:pk>/', UsuarioRetrieveUpdateDestroyView.as_view(), name='usuarios-detail'),     
+    path('usuarios/<int:pk>/', UsuarioRetrieveUpdateDestroyView.as_view(), name='usuarios-detail'),  
+    path('api/notas/', include('notas.urls')),  
+    path('api/asignaturas/', include('asignaturas.urls')),  # URLs de asignaturas
 ]
 
