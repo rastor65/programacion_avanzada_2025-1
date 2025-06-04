@@ -7,7 +7,7 @@ from asistencias.models import *
 from notas.models import *
 from comportamiento.models import *
 from rest_framework.validators import UniqueTogetherValidator
-from asignaturas.models import Asignatura, Curso, Horario
+from asignaturas.models import Asignatura, Curso, Horario, MatriculaCurso, AsignaturaCurso
 
 
 # Serializers en Clase y tambien de guia de auth
@@ -116,18 +116,50 @@ class NotificacionSerializer(serializers.ModelSerializer):
 
 # Serializers Asistencias
 class AsistenciaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Asistencia
-        fields = ['id', 'usuario', 'fecha', 'hora', 'estado', 'justificacion', 'validada', 'creado_en', 'actualizado_en']
-        read_only_fields = ['creado_en', 'actualizado_en']
-
-class AsistenciaListSerializer(serializers.ModelSerializer):
-    usuario_nombre = serializers.CharField(source='usuario.__str__', read_only=True)
+    estudiante_nombre = serializers.SerializerMethodField()
+    curso_detalle = serializers.SerializerMethodField()
     estado_display = serializers.CharField(source='get_estado_display', read_only=True)
 
     class Meta:
         model = Asistencia
-        fields = ['id', 'usuario', 'usuario_nombre', 'fecha', 'hora', 'estado', 'estado_display', 'validada']
+        fields = [
+            'id', 'matricula', 'estudiante_nombre', 'curso_detalle',
+            'fecha', 'hora', 'estado', 'estado_display',
+            'justificacion', 'validada', 'creado_en', 'actualizado_en'
+        ]
+        read_only_fields = ['creado_en', 'actualizado_en']
+
+    def get_estudiante_nombre(self, obj):
+        if obj.matricula:
+            return f"{obj.matricula.estudiante.nombres} {obj.matricula.estudiante.apellidos}"
+        return f"{obj.usuario.nombres} {obj.usuario.apellidos}" if obj.usuario else "Sin asignar"
+
+    def get_curso_detalle(self, obj):
+        if obj.matricula:
+            return str(obj.matricula.curso)
+        return "Sin asignar"
+
+class AsistenciaListSerializer(serializers.ModelSerializer):
+    estudiante_nombre = serializers.SerializerMethodField()
+    curso_detalle = serializers.SerializerMethodField()
+    estado_display = serializers.CharField(source='get_estado_display', read_only=True)
+
+    class Meta:
+        model = Asistencia
+        fields = [
+            'id', 'estudiante_nombre', 'curso_detalle',
+            'fecha', 'hora', 'estado', 'estado_display', 'validada'
+        ]
+
+    def get_estudiante_nombre(self, obj):
+        if obj.matricula:
+            return f"{obj.matricula.estudiante.nombres} {obj.matricula.estudiante.apellidos}"
+        return f"{obj.usuario.nombres} {obj.usuario.apellidos}" if obj.usuario else "Sin asignar"
+
+    def get_curso_detalle(self, obj):
+        if obj.matricula:
+            return str(obj.matricula.curso)
+        return "Sin asignar"
 
 
 # Serializers Notas
@@ -227,36 +259,81 @@ class AsignaturaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asignatura
         fields = [
-            'id', 'codigo', 'nombre', 'descripcion', 'area_estudio',
-            'fecha_inicio', 'fecha_fin'
+            'id', 'codigo', 'nombre', 
+            'descripcion', 'area_estudio'
         ]
 
 class CursoSerializer(serializers.ModelSerializer):
-    asignatura_nombre = serializers.CharField(source='asignatura.nombre', read_only=True)
+    nivel_display = serializers.CharField(source='get_nivel_display', read_only=True)
+    periodo_display = serializers.CharField(source='get_periodo_display', read_only=True)
 
     class Meta:
         model = Curso
         fields = [
-            'id', 'asignatura', 'asignatura_nombre', 'nivel', 'paralelo',
-            'cupo_maximo', 'estado'
+            'id', 'nivel', 'nivel_display', 
+            'paralelo', 'cupo_maximo', 'estado',
+            'periodo', 'periodo_display'
         ]
 
-class HorarioSerializer(serializers.ModelSerializer):
+class AsignaturaCursoSerializer(serializers.ModelSerializer):
     curso_detalle = serializers.CharField(source='curso.__str__', read_only=True)
+    asignatura_detalle = serializers.CharField(source='asignatura.__str__', read_only=True)
+
+    class Meta:
+        model = AsignaturaCurso
+        fields = [
+            'id', 'curso', 'curso_detalle',
+            'asignatura', 'asignatura_detalle',
+            'horas_semanales', 'fecha_inicio', 'fecha_fin'
+        ]
+
+
+class HorarioSerializer(serializers.ModelSerializer):
     dia_display = serializers.CharField(source='get_dia_display', read_only=True)
+    curso = serializers.SerializerMethodField()
+    asignatura = serializers.SerializerMethodField()
+    periodo = serializers.SerializerMethodField()
 
     class Meta:
         model = Horario
         fields = [
-            'id', 'curso', 'curso_detalle', 'dia', 'dia_display',
-            'hora_inicio', 'hora_fin'
+            'id', 'curso', 'asignatura', 'periodo',
+            'dia', 'dia_display', 'hora_inicio', 'hora_fin'
         ]
 
-class CursoDetalladoSerializer(CursoSerializer):
-    horarios = HorarioSerializer(many=True, read_only=True)
-    asignatura = AsignaturaSerializer(read_only=True)
+    def get_curso(self, obj):
+        if obj.asignatura_curso:
+            curso = obj.asignatura_curso.curso
+            return f"{curso.get_nivel_display()}-{curso.paralelo}"
+        return None
 
-    class Meta(CursoSerializer.Meta):
-        fields = CursoSerializer.Meta.fields + ['horarios']
+    def get_asignatura(self, obj):
+        if obj.asignatura_curso:
+            return obj.asignatura_curso.asignatura.nombre
+        return None
+
+    def get_periodo(self, obj):
+        if obj.asignatura_curso:
+            return obj.asignatura_curso.curso.get_periodo_display()
+        return None
+
+class MatriculaCursoSerializer(serializers.ModelSerializer):
+    estudiante_nombre = serializers.SerializerMethodField()
+    curso_detalle = serializers.SerializerMethodField()
+    estado_display = serializers.CharField(source='get_estado_display', read_only=True)
+
+    class Meta:
+        model = MatriculaCurso
+        fields = [
+            'id', 'estudiante', 'estudiante_nombre',
+            'curso', 'curso_detalle',
+            'fecha_matricula', 'estado', 'estado_display'
+        ]
+
+    def get_estudiante_nombre(self, obj):
+        return f"{obj.estudiante.nombres} {obj.estudiante.apellidos}"
+
+    def get_curso_detalle(self, obj):
+        return str(obj.curso)
 
 

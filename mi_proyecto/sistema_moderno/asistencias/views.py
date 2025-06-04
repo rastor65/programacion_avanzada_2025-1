@@ -10,53 +10,83 @@ from autenticacion.permisos import IsAdminRole
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from asignaturas.models import MatriculaCurso
 
 class AsistenciaListCreateView(generics.ListCreateAPIView):
-    serializer_class = AsistenciaListSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        # Si es admin o profesor, puede ver todas las asistencias
-        roles_permitidos = ['Administrador', 'Profesor']
-        user_rol = self.request.user.perfil.rol
-
-        if user_rol and user_rol.nombre in roles_permitidos:
-            return Asistencia.objects.all()
-        else:
-            # Los estudiantes solo ven sus propias asistencias
-            return Asistencia.objects.filter(usuario=self.request.user.perfil)
-
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return AsistenciaSerializer
-        return AsistenciaListSerializer
-
-    def perform_create(self, serializer):
-        # Solo profesores y admin pueden crear asistencias
-        roles_permitidos = ['Administrador', 'Profesor']
-        user_rol = self.request.user.perfil.rol
-        
-        if not user_rol or user_rol.nombre not in roles_permitidos:
-            raise permissions.PermissionDenied(
-                "Solo los profesores y admins pueden registrar asistencias."
-            )
-        serializer.save()
-
-class AsistenciaRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Asistencia.objects.all()
     serializer_class = AsistenciaSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Si es admin o profesor, puede ver todas las asistencias
-        roles_permitidos = ['Administrador', 'Profesor']
-        user_rol = self.request.user.perfil.rol
+        queryset = Asistencia.objects.all()
+        
+        # Filtrar por matrícula
+        matricula_id = self.request.query_params.get('matricula', None)
+        if matricula_id:
+            queryset = queryset.filter(matricula_id=matricula_id)
+        
+        # Filtrar por curso
+        curso_id = self.request.query_params.get('curso', None)
+        if curso_id:
+            queryset = queryset.filter(matricula__curso_id=curso_id)
+            
+        # Filtrar por fecha
+        fecha = self.request.query_params.get('fecha', None)
+        if fecha:
+            queryset = queryset.filter(fecha=fecha)
+            
+        # Filtrar por estado
+        estado = self.request.query_params.get('estado', None)
+        if estado:
+            queryset = queryset.filter(estado=estado)
+            
+        return queryset
 
-        if user_rol and user_rol.nombre in roles_permitidos:
-            return Asistencia.objects.all()
-        else:
-            # Los estudiantes solo ven sus propias asistencias
-            return Asistencia.objects.filter(usuario=self.request.user.perfil)
+    def create(self, request, *args, **kwargs):
+        # Si se proporciona un curso_id, crear asistencias para todos los estudiantes matriculados
+        curso_id = request.data.get('curso_id', None)
+        if curso_id:
+            matriculas = MatriculaCurso.objects.filter(
+                curso_id=curso_id,
+                estado='ACTIVO'
+            )
+            
+            asistencias = []
+            fecha = request.data.get('fecha', timezone.now().date())
+            hora = request.data.get('hora', timezone.now().time())
+            
+            for matricula in matriculas:
+                asistencia = Asistencia(
+                    matricula=matricula,
+                    fecha=fecha,
+                    hora=hora,
+                    estado='AUSENTE'  # Por defecto todos están ausentes hasta que se marque lo contrario
+                )
+                asistencias.append(asistencia)
+            
+            Asistencia.objects.bulk_create(asistencias)
+            
+            serializer = AsistenciaListSerializer(asistencias, many=True)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+        return super().create(request, *args, **kwargs)
+
+class AsistenciaDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Asistencia.objects.all()
+    serializer_class = AsistenciaSerializer
+    permission_classes = [IsAuthenticated]
+
+class AsistenciasPorCursoView(generics.ListAPIView):
+    serializer_class = AsistenciaListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        curso_id = self.kwargs['curso_id']
+        fecha = self.request.query_params.get('fecha', timezone.now().date())
+        
+        return Asistencia.objects.filter(
+            matricula__curso_id=curso_id,
+            fecha=fecha
+        ).order_by('matricula__estudiante__apellidos', 'matricula__estudiante__nombres')
 
 class ValidarAsistenciaView(APIView):
     permission_classes = [IsAuthenticated]

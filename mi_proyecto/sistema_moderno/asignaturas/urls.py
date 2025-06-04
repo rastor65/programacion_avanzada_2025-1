@@ -1,15 +1,18 @@
 from django.urls import path
-from . import views
+from .views import *
 
 app_name = 'asignaturas'
 
 urlpatterns = [
-    path('asignaturas/', views.AsignaturaListCreateView.as_view(), name='asignatura-list-create'),
-    path('asignaturas/<int:pk>/', views.AsignaturaDetailView.as_view(), name='asignatura-detail'),
-    path('cursos/', views.CursoListCreateView.as_view(), name='curso-list-create'),
-    path('cursos/<int:pk>/', views.CursoDetailView.as_view(), name='curso-detail'),
-    path('cursos/<int:pk>/detallado/', views.CursoDetalladoView.as_view(), name='curso-detallado'),
-    path('horarios/', views.HorarioListCreateView.as_view(), name='horario-list-create'),
-    path('horarios/<int:pk>/', views.HorarioDetailView.as_view(), name='horario-detail'),
-    path('cursos/<int:curso_id>/horarios/', views.HorarioPorCursoView.as_view(), name='horarios-por-curso'),
+    path('asignaturas/', AsignaturaListCreateView.as_view(), name='asignatura-list'),
+    path('asignaturas/<int:pk>/', AsignaturaDetailView.as_view(), name='asignatura-detail'),
+    path('cursos/', CursoListCreateView.as_view(), name='curso-list'),
+    path('cursos/<int:pk>/', CursoDetailView.as_view(), name='curso-detail'),
+    path('asignatura-curso/', AsignaturaCursoListCreateView.as_view(), name='asignatura-curso-list'),
+    path('asignatura-curso/<int:pk>/', AsignaturaCursoDetailView.as_view(), name='asignatura-curso-detail'),
+    path('horarios/', HorarioListCreateView.as_view(), name='horario-list'),
+    path('horarios/<int:pk>/', HorarioDetailView.as_view(), name='horario-detail'),
+    path('matriculas/', MatriculaCursoListCreateView.as_view(), name='matricula-list'),
+    path('matriculas/<int:pk>/', MatriculaCursoDetailView.as_view(), name='matricula-detail'),
+    path('matriculas/estudiante/<int:estudiante_id>/', MatriculasPorEstudianteView.as_view(), name='matriculas-estudiante'),
 ] 
