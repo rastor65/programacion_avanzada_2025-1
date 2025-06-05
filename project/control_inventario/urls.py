@@ -24,8 +24,12 @@ from rest_framework_simplejwt.views import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('dashboard.urls')),
     path('', include('autenticacion.urls')),
+    path('api/', include('clientes.urls')),
+    path('api/', include('productos.urls')),
+    path('api/', include('proveedores.urls')),
+    path('api/', include('compras.urls')),
+    path('api/', include('ventas.urls')),
     path('usuarios/', UsuarioListView.as_view(), name = 'usuario-list-create'),
     path('usuarios/<int:pk>/', UsuarioRetrieveUpdateDestroyView.as_view(), name = 'usuario-detail'),
 ]

@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework import generics, permissions, status
 from .models import Usuario
 from .serializer.serializers import *
@@ -8,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .permissions import IsAdminRole
+from .permissions import IsAdminRole, IsAdminOrSupervisorReadOnly
 
 # REGISTRO DE USUARIOS
 class RegisterView(generics.CreateAPIView):
@@ -36,7 +35,7 @@ class RegisterView(generics.CreateAPIView):
 class UsuarioListView(generics.ListAPIView):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
-    permission_classes = [IsAuthenticated, IsAdminRole]
+    permission_classes = [IsAuthenticated, IsAdminOrSupervisorReadOnly]
 
 class UsuarioRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Usuario.objects.all()
@@ -92,14 +91,14 @@ class LogoutView(APIView):
 class RolListCreateView(generics.ListCreateAPIView):
     queryset = Rol.objects.all()
     serializer_class = RolSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdminRole]
 
 class RolRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Rol.objects.all()
     serializer_class = RolSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdminRole]
 
 class UsuarioRolCreateView(generics.CreateAPIView):
     queryset = UsuarioRol.objects.all()
     serializer_class = UsuarioRolSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdminRole]
