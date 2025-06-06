@@ -56,7 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'autenticacion.middleware.JWTAuthCookieMiddleware', # Middleware personalizado
+    'autenticacion.middleware.JWTAuthCookieMiddleware', 
 ]
 
 ROOT_URLCONF = 'sistema_moderno.urls'

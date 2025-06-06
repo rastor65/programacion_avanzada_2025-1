@@ -58,7 +58,6 @@ class Curso(models.Model):
         ordering = ['periodo', 'nivel', 'paralelo']
 
     def clean(self):
-        # Asegurarse de que el paralelo siempre tenga dos dígitos
         if self.paralelo and len(self.paralelo) == 1:
             self.paralelo = f"0{self.paralelo}"
         super().clean()

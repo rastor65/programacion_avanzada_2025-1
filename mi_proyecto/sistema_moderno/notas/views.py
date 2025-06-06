@@ -10,6 +10,7 @@ from serializer.serializers import *
 
 # Create your views here.
 
+# Vistas de Periodo Academico
 class PeriodoAcademicoListCreateView(generics.ListCreateAPIView):
     queryset = PeriodoAcademico.objects.all()
     serializer_class = PeriodoAcademicoSerializer
@@ -27,6 +28,8 @@ class PeriodoAcademicoListCreateView(generics.ListCreateAPIView):
         
         return queryset
 
+
+# Vistas de Tipo de Actividad
 class TipoActividadListCreateView(generics.ListCreateAPIView):
     queryset = TipoActividad.objects.all()
     serializer_class = TipoActividadSerializer
@@ -46,6 +49,8 @@ class TipoActividadListCreateView(generics.ListCreateAPIView):
         
         serializer.save()
 
+
+# Vistas de Actividades 
 class ActividadListCreateView(generics.ListCreateAPIView):
     serializer_class = ActividadSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -62,6 +67,8 @@ class ActividadListCreateView(generics.ListCreateAPIView):
             
         return queryset
 
+
+# Vistas de Notas
 class NotaListCreateView(generics.ListCreateAPIView):
     serializer_class = NotaSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -90,6 +97,8 @@ class NotaListCreateView(generics.ListCreateAPIView):
                 return queryset
         return Nota.objects.none()
 
+
+
 class NotaDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = NotaSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -102,6 +111,8 @@ class NotaDetailView(generics.RetrieveUpdateDestroyAPIView):
             return Nota.objects.all()
         return Nota.objects.none()
 
+
+# Falta... 
 class BoletinPeriodoView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 

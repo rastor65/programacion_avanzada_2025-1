@@ -12,7 +12,7 @@ from autenticacion.permisos import IsAdminRole
 class AsignaturaListCreateView(generics.ListCreateAPIView):
     queryset = Asignatura.objects.all()
     serializer_class = AsignaturaSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]  
 
     def get_queryset(self):
         queryset = Asignatura.objects.all()
@@ -25,6 +25,7 @@ class AsignaturaDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Asignatura.objects.all()
     serializer_class = AsignaturaSerializer
     permission_classes = [IsAuthenticated]
+
 
 # Vistas para Cursos
 class CursoListCreateView(generics.ListCreateAPIView):
@@ -48,6 +49,8 @@ class CursoDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Curso.objects.all()
     serializer_class = CursoSerializer
     permission_classes = [IsAuthenticated]
+
+
 
 # Vistas para Horarios
 class HorarioListCreateView(generics.ListCreateAPIView):
@@ -79,6 +82,8 @@ class HorarioPorCursoView(generics.ListAPIView):
         curso_id = self.kwargs['curso_id']
         return Horario.objects.filter(curso_id=curso_id)
 
+
+# Vistas de Matrículas en Cursos
 class MatriculaCursoListCreateView(generics.ListCreateAPIView):
     serializer_class = MatriculaCursoSerializer
     permission_classes = [IsAuthenticated]
@@ -114,6 +119,8 @@ class MatriculasPorEstudianteView(generics.ListAPIView):
             estado='ACTIVO'
         )
 
+
+# Vistas de Asignaturas en Cursos
 class AsignaturaCursoListCreateView(generics.ListCreateAPIView):
     serializer_class = AsignaturaCursoSerializer
     permission_classes = [IsAuthenticated]

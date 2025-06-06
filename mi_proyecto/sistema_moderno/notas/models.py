@@ -88,7 +88,7 @@ class Nota(TimeStampedModel):
     )
     valor = models.FloatField(
         verbose_name="Valor de la nota",
-        help_text="Valor numérico de la nota (0-10). Se permite hasta 2 decimales.",
+        help_text="Valor numérico de la nota (0-10). Se permite hasta 2 decimales",
         validators=[MinValueValidator(0), MaxValueValidator(10)]
     )
     observaciones = models.TextField(
@@ -100,7 +100,7 @@ class Nota(TimeStampedModel):
     es_recuperacion = models.BooleanField(
         default=False,
         verbose_name="¿Es recuperación?",
-        help_text="Indica si esta nota corresponde a una recuperación"
+        help_text="Indica si la nota se puede recuperar"
     )
 
     class Meta:
