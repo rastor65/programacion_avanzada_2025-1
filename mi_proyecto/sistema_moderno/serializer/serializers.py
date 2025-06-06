@@ -169,7 +169,7 @@ class PeriodoAcademicoSerializer(serializers.ModelSerializer):
         fields = ['id', 'nombre', 'numero', 'año_lectivo', 'fecha_inicio', 'fecha_fin', 'activo']
 
 class TipoActividadSerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta: 
         model = TipoActividad
         fields = ['id', 'nombre', 'descripcion', 'porcentaje']
 
