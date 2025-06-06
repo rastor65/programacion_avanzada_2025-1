@@ -18,12 +18,14 @@ from django.contrib import admin
 from django.urls import path, include
 from autenticacion.views import UsuarioListView, UsuarioRetrieveUpdateDestroyView
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-
+    path('pedidos/', include('pedidos.urls')),
     path('auth/', include('autenticacion.urls')),
-
     path('usuarios/', UsuarioListView.as_view(), name='usuario-list'),
     path('usuarios/<int:pk>/', UsuarioRetrieveUpdateDestroyView.as_view(), name='usuario-detail'),
+    path('pedidos/', include('pedidos.urls')),
+
 ]
 
