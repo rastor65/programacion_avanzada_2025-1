@@ -140,3 +140,13 @@ class RegistrarAsistenciaHoyView(APIView):
             {'status': 'Asistencia registrada correctamente'},
             status=status.HTTP_201_CREATED
         )
+
+class AsistenciaMasivaAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = AsistenciaMasivaSerializer(data=request.data)
+        if serializer.is_valid():
+            asistencias = serializer.save()
+            return Response({'message': f'Se crearon/actualizaron {len(asistencias)} asistencias exitosamente'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -7,9 +7,14 @@ from .models import *
 from autenticacion.models import Usuario
 from django.shortcuts import get_object_or_404
 from serializer.serializers import *
+from asignaturas.models import PeriodoAcademico  # Importar PeriodoAcademico si es necesario
+from rest_framework.decorators import action
+from rest_framework.viewsets import ViewSet
+from django.db import transaction
 
 # Create your views here.
 
+<<<<<<< Updated upstream
 # Vistas de Periodo Academico
 class PeriodoAcademicoListCreateView(generics.ListCreateAPIView):
     queryset = PeriodoAcademico.objects.all()
@@ -30,6 +35,8 @@ class PeriodoAcademicoListCreateView(generics.ListCreateAPIView):
 
 
 # Vistas de Tipo de Actividad
+=======
+>>>>>>> Stashed changes
 class TipoActividadListCreateView(generics.ListCreateAPIView):
     queryset = TipoActividad.objects.all()
     serializer_class = TipoActividadSerializer
@@ -117,55 +124,173 @@ class BoletinPeriodoView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, periodo_id=None, estudiante_id=None):
-        # Si no se especifica estudiante_id y el usuario es estudiante, usa su ID
-        if estudiante_id is None and hasattr(request.user, 'perfil') and request.user.perfil.rol.nombre == 'Estudiante':
-            estudiante_id = request.user.perfil.id
-        
-        # Si aún no hay estudiante_id o periodo_id, error
-        if estudiante_id is None or periodo_id is None:
+        try:
+            # Si no se especifica estudiante_id y el usuario es estudiante, usa su ID
+            if estudiante_id is None and hasattr(request.user, 'perfil') and request.user.perfil.rol.nombre == 'Estudiante':
+                estudiante_id = request.user.perfil.id
+            
+            # Si aún no hay estudiante_id o periodo_id, error
+            if estudiante_id is None or periodo_id is None:
+                return Response(
+                    {'error': 'Debe especificar estudiante y período'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            estudiante = get_object_or_404(Usuario, id=estudiante_id)
+            periodo = get_object_or_404(PeriodoAcademico, id=periodo_id)
+            
+            # Verificar permisos
+            if request.user.perfil.rol.nombre == 'Estudiante' and request.user.perfil.id != estudiante_id:
+                return Response(
+                    {'error': 'No tiene permisos para ver este boletín'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Obtener todas las notas del estudiante en el período
+            notas = Nota.objects.filter(
+                estudiante=estudiante,
+                actividad__periodo=periodo
+            ).select_related('actividad', 'actividad__tipo')
+
+            # Agrupar notas por tipo de actividad
+            tipos_actividad = TipoActividad.objects.all()
+            notas_por_tipo = {}
+            promedio_periodo = 0
+            suma_porcentajes = 0
+            total_actividades = 0
+            actividades_completadas = 0
+            
+            for tipo in tipos_actividad:
+                notas_tipo = notas.filter(actividad__tipo=tipo)
+                if notas_tipo.exists():
+                    promedio_tipo = round(notas_tipo.aggregate(Avg('valor'))['valor__avg'], 2)
+                    notas_por_tipo[tipo.nombre] = {
+                        'promedio': promedio_tipo,
+                        'porcentaje': tipo.porcentaje,
+                        'notas': NotaSerializer(notas_tipo, many=True).data,
+                        'total_actividades': notas_tipo.count(),
+                        'recuperaciones': notas_tipo.filter(es_recuperacion=True).count()
+                    }
+                    promedio_periodo += (promedio_tipo * (tipo.porcentaje / 100))
+                    suma_porcentajes += tipo.porcentaje
+                    total_actividades += notas_tipo.count()
+                    actividades_completadas += notas_tipo.count()
+
+            # Si no hay notas para todos los tipos, ajustar el promedio
+            if suma_porcentajes < 100:
+                promedio_periodo = (promedio_periodo * 100) / suma_porcentajes if suma_porcentajes > 0 else 0
+
+            # Preparar respuesta
+            data = {
+                'periodo': PeriodoAcademicoSerializer(periodo).data,
+                'estudiante': {
+                    'id': estudiante.id,
+                    'nombre_completo': f"{estudiante.nombres} {estudiante.apellidos}",
+                    'identificacion': estudiante.identificacion
+                },
+                'notas_por_tipo': notas_por_tipo,
+                'promedio_periodo': round(promedio_periodo, 2),
+                'porcentaje_evaluado': round(suma_porcentajes, 2),
+                'estadisticas': {
+                    'total_actividades': total_actividades,
+                    'actividades_completadas': actividades_completadas,
+                    'actividades_pendientes': total_actividades - actividades_completadas,
+                    'recuperaciones_totales': notas.filter(es_recuperacion=True).count()
+                }
+            }
+            
+            return Response(data)
+            
+        except Exception as e:
             return Response(
-                {'error': 'Debe especificar estudiante y período'},
-                status=status.HTTP_400_BAD_REQUEST
+                {'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-        estudiante = get_object_or_404(Usuario, id=estudiante_id)
-        periodo = get_object_or_404(PeriodoAcademico, id=periodo_id)
-        
-        # Obtener todas las notas del estudiante en el período
-        notas = Nota.objects.filter(
-            estudiante=estudiante,
-            actividad__periodo=periodo
-        )
+class NotaMasivaView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
-        # Agrupar notas por tipo de actividad
-        tipos_actividad = TipoActividad.objects.all()
-        notas_por_tipo = {}
-        promedio_periodo = 0
-        suma_porcentajes = 0
-        
-        for tipo in tipos_actividad:
-            notas_tipo = notas.filter(actividad__tipo=tipo)
-            if notas_tipo.exists():
-                promedio_tipo = round(notas_tipo.aggregate(Avg('valor'))['valor__avg'], 2)
-                notas_por_tipo[tipo.nombre] = {
-                    'promedio': promedio_tipo,
-                    'porcentaje': tipo.porcentaje,
-                    'notas': NotaSerializer(notas_tipo, many=True).data
-                }
-                promedio_periodo += (promedio_tipo * (tipo.porcentaje / 100))
-                suma_porcentajes += tipo.porcentaje
-
-        # Si no hay notas para todos los tipos, ajustar el promedio
-        if suma_porcentajes < 100:
-            promedio_periodo = (promedio_periodo * 100) / suma_porcentajes if suma_porcentajes > 0 else 0
-
-        # Preparar respuesta
-        data = {
-            'periodo': PeriodoAcademicoSerializer(periodo).data,
-            'estudiante': f"{estudiante.nombres} {estudiante.apellidos}",
-            'notas_por_tipo': notas_por_tipo,
-            'promedio_periodo': round(promedio_periodo, 2),
-            'porcentaje_evaluado': round(suma_porcentajes, 2)
+    @transaction.atomic
+    def post(self, request):
+        """
+        Crea notas masivamente para todos los estudiantes de una actividad.
+        Formato esperado:
+        {
+            "actividad_id": 1,
+            "notas": [
+                {"estudiante_id": 1, "valor": 8.5, "observaciones": "Buen trabajo"},
+                {"estudiante_id": 2, "valor": 7.0, "observaciones": ""}
+            ]
         }
-        
-        return Response(data)
+        """
+        try:
+            actividad_id = request.data.get('actividad_id')
+            notas_data = request.data.get('notas', [])
+            
+            if not actividad_id or not notas_data:
+                return Response({
+                    'error': 'Se requiere actividad_id y lista de notas'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            actividad = get_object_or_404(Actividad, id=actividad_id)
+            notas_creadas = []
+            errores = []
+            
+            # Validar que el usuario tenga permiso para crear notas
+            if not request.user.perfil.rol.nombre in ['Profesor', 'Administrador']:
+                return Response({
+                    'error': 'No tiene permisos para crear notas'
+                }, status=status.HTTP_403_FORBIDDEN)
+            
+            for nota_data in notas_data:
+                try:
+                    estudiante_id = nota_data.get('estudiante_id')
+                    valor = nota_data.get('valor')
+                    observaciones = nota_data.get('observaciones', '')
+                    
+                    if not estudiante_id or valor is None:
+                        errores.append(f"Datos incompletos para estudiante {estudiante_id}")
+                        continue
+                    
+                    # Validar que el estudiante existe
+                    estudiante = get_object_or_404(Usuario, id=estudiante_id)
+                    
+                    # Validar que el valor está en el rango correcto
+                    if not 0 <= float(valor) <= 10:
+                        errores.append(f"Valor de nota inválido para estudiante {estudiante_id}: {valor}")
+                        continue
+                    
+                    # Crear o actualizar la nota
+                    nota, created = Nota.objects.update_or_create(
+                        estudiante=estudiante,
+                        actividad=actividad,
+                        defaults={
+                            'valor': valor,
+                            'observaciones': observaciones
+                        }
+                    )
+                    
+                    # Validar la nota antes de guardar
+                    nota.full_clean()
+                    nota.save()
+                    
+                    notas_creadas.append(NotaSerializer(nota).data)
+                    
+                except Exception as e:
+                    errores.append(f"Error al procesar nota para estudiante {estudiante_id}: {str(e)}")
+            
+            response_data = {
+                'message': f'Se crearon/actualizaron {len(notas_creadas)} notas exitosamente',
+                'notas': notas_creadas
+            }
+            
+            if errores:
+                response_data['errores'] = errores
+                return Response(response_data, status=status.HTTP_207_MULTI_STATUS)
+            
+            return Response(response_data, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)

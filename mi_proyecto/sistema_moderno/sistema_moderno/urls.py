@@ -22,16 +22,33 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,   
 )
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 
+schema_view = get_schema_view(
+    openapi.Info(
+        title="API Gestión Educativa",
+        default_version='v1',
+        description="Documentación de la API para el sistema de gestión educativa",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="soporte@tucolegio.com"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('usuarios/', UsuarioListView.as_view(), name='usuario_list_create'),
+    path('auth/', include('autenticacion.urls')),
     path('usuarios/<int:pk>/', UsuarioRetrieveUpdateDestroyView.as_view(), name='usuario_detail'),
-    path('api/autenticacion/', include('autenticacion.urls')),
     path('usuarios/', UsuarioListView.as_view(), name='usuarios-list-create'),
     path('usuarios/<int:pk>/', UsuarioRetrieveUpdateDestroyView.as_view(), name='usuarios-detail'),  
     path('api/notas/', include('notas.urls')),  
     path('api/asignaturas/', include('asignaturas.urls')),  # URLs de asignaturas
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
 

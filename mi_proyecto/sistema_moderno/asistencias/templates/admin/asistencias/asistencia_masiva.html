@@ -1,0 +1,21 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>Asistencia Masiva por Curso</h1>
+<form method="post">{% csrf_token %}
+  <fieldset>
+    <legend>Selecciona el curso, fecha y hora</legend>
+    {{ form.as_p }}
+    <button type="submit">Mostrar estudiantes</button>
+  </fieldset>
+</form>
+{% if input_form %}
+  <form method="post">{% csrf_token %}
+    <fieldset>
+      <legend>Asistencia para los estudiantes</legend>
+      {{ input_form.as_p }}
+      <button type="submit">Guardar asistencias</button>
+    </fieldset>
+  </form>
+{% endif %}
+<a href="../">&larr; Volver</a>
+{% endblock %} 

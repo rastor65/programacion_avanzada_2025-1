@@ -1,6 +1,7 @@
 from django.db import models
 from autenticacion.models import Usuario
 from notas.models import *
+from asignaturas.models import PeriodoAcademico  # Importar PeriodoAcademico desde asignaturas.models
 
 # Create your models here.
 

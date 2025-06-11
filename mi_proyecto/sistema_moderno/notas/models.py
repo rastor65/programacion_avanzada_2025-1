@@ -1,29 +1,9 @@
 from django.db import models
 from autenticacion.models import *
 from django.core.validators import *
+from asignaturas.models import PeriodoAcademico
 
 # Create your models here.
-
-class PeriodoAcademico(models.Model):
-    nombre = models.CharField(max_length=50, verbose_name="Nombre")
-    numero = models.IntegerField(
-        verbose_name="Número del período",
-        validators=[MinValueValidator(1), MaxValueValidator(4)],
-        help_text="Número del período (1-4)"
-    )
-    fecha_inicio = models.DateField(verbose_name="Fecha de inicio")
-    fecha_fin = models.DateField(verbose_name="Fecha de fin")
-    año_lectivo = models.IntegerField(verbose_name="Año lectivo")
-    activo = models.BooleanField(default=True, verbose_name="¿Está activo?")
-
-    class Meta:
-        verbose_name = "Período Académico"
-        verbose_name_plural = "Períodos Académicos"
-        ordering = ['-año_lectivo', 'numero']
-        unique_together = ['numero', 'año_lectivo']
-
-    def __str__(self):
-        return f"Período {self.numero} - {self.año_lectivo}"
 
 class TipoActividad(models.Model):
     nombre = models.CharField(max_length=100, verbose_name="Nombre")
@@ -59,7 +39,9 @@ class Actividad(models.Model):
         PeriodoAcademico,
         on_delete=models.CASCADE,
         related_name='actividades',
-        verbose_name="Período Académico"
+        verbose_name="Período Académico",
+        null=True,  # Temporalmente opcional para migrar
+        blank=True
     )
     fecha_asignacion = models.DateField(verbose_name="Fecha de asignación")
     fecha_entrega = models.DateField(verbose_name="Fecha de entrega")
@@ -114,8 +96,29 @@ class Nota(TimeStampedModel):
 
     def clean(self):
         from django.core.exceptions import ValidationError
+        from django.utils import timezone
+        
+        # Validar rango de nota
         if self.valor < 0 or self.valor > 10:
             raise ValidationError('El valor de la nota debe estar entre 0 y 10')
         
-        # Redondear a 2 decimales para mantener consistencia
+        # Redondear a 2 decimales
         self.valor = round(self.valor, 2)
+        
+        # Validar que la fecha de la nota no sea anterior a la fecha de asignación
+        if hasattr(self, 'actividad') and self.actividad:
+            if timezone.now().date() < self.actividad.fecha_asignacion:
+                raise ValidationError('No se puede registrar una nota antes de la fecha de asignación de la actividad')
+            
+            # Validar que no haya más de una recuperación por actividad
+            if self.es_recuperacion:
+                recuperaciones = Nota.objects.filter(
+                    estudiante=self.estudiante,
+                    actividad=self.actividad,
+                    es_recuperacion=True
+                ).exclude(id=self.id)
+                if recuperaciones.exists():
+                    raise ValidationError('Ya existe una nota de recuperación para esta actividad')
+
+# El modelo PeriodoAcademico ha sido eliminado de esta app. Usar el de asignaturas.
+# Elimina cualquier ForeignKey o referencia a PeriodoAcademico en otros modelos de esta app.

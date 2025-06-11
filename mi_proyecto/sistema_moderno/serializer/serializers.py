@@ -1,13 +1,13 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from autenticacion.models import *
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from notificaciones.models import *
-from asistencias.models import *
-from notas.models import *
-from comportamiento.models import *
-from rest_framework.validators import UniqueTogetherValidator
-from asignaturas.models import Asignatura, Curso, Horario, MatriculaCurso, AsignaturaCurso
+from autenticacion.models import Usuario, Rol, UsuarioRol
+from asignaturas.models import Asignatura, Curso, Horario, MatriculaCurso
+from notas.models import TipoActividad, Actividad, Nota, PeriodoAcademico
+from notificaciones.models import TipoNotificacion, Notificacion
+from asistencias.models import Asistencia
+from comportamiento.models import TipoFalta, RegistroComportamiento, Compromiso
+from rest_framework.views import APIView
 
 
 # Serializers en Clase y tambien de guia de auth
@@ -28,27 +28,19 @@ class RolSerializer(serializers.ModelSerializer):
 
 # UsuarioSerializer:
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        read_only_fields = ['id']
+
 class UsuarioSerializer(serializers.ModelSerializer):
-    rol_nombre = serializers.CharField(source='rol.nombre', read_only=True)
-    rol_id = serializers.IntegerField(source='rol.id', read_only=True)
-    roles = serializers.SerializerMethodField()
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = Usuario
-        fields = ['id', 'nombres', 'apellidos', 'promedio', 'disponibilidad', 'rol_id', 'rol_nombre', 'roles']
-
-    def get_roles(self, obj):
-        from autenticacion.models import UsuarioRol # Evitar importación circular
-        
-        asignaciones = UsuarioRol.objects.filter(usuario=obj).select_related('rol')
-
-        return [
-            {
-                "id": ar.rol.id,
-                "nombre": ar.rol.nombre,
-            }
-            for ar in asignaciones
-        ]
+        fields = ['id', 'user', 'rol', 'nombres', 'apellidos', 'promedio', 'disponibilidad']
+        read_only_fields = ['id']
 
 
 # RegisterSerializer:
@@ -107,10 +99,32 @@ class TipoNotificacionSerializer(serializers.ModelSerializer):
         fields = ['id', 'nombre', 'mensaje', 'prioridad']
 
 class NotificacionSerializer(serializers.ModelSerializer):
+    tipo_nombre = serializers.CharField(source='tipo.nombre', read_only=True)
+    prioridad = serializers.CharField(source='tipo.prioridad', read_only=True)
+    usuario_nombre = serializers.CharField(source='usuario.__str__', read_only=True)
+
     class Meta:
         model = Notificacion
-        fields = ['id', 'usuario', 'tipo', 'titulo', 'mensaje', 'leido', 'fecha']
-        read_only_fields = ['fecha']
+        fields = [
+            'id', 'usuario', 'usuario_nombre',
+            'tipo', 'tipo_nombre', 'prioridad',
+            'titulo', 'mensaje', 'leido',
+            'fecha', 'creado_en'
+        ]
+        read_only_fields = ['fecha', 'creado_en']
+
+    def create(self, validated_data):
+        # Si no se especifica un tipo, usar el tipo por defecto para notas
+        if 'tipo' not in validated_data:
+            tipo, _ = TipoNotificacion.objects.get_or_create(
+                nombre='nota',
+                defaults={
+                    'mensaje': 'Notificación de nota',
+                    'prioridad': 'MEDIA'
+                }
+            )
+            validated_data['tipo'] = tipo
+        return super().create(validated_data)
 
 
 
@@ -161,6 +175,49 @@ class AsistenciaListSerializer(serializers.ModelSerializer):
             return str(obj.matricula.curso)
         return "Sin asignar"
 
+class AsistenciaMasivaSerializer(serializers.Serializer):
+    curso_id = serializers.IntegerField()
+    fecha = serializers.DateField()
+    hora = serializers.TimeField()
+    asistencias = serializers.ListField(
+        child=serializers.DictField(
+            child=serializers.CharField()
+        )
+    )
+
+    def validate_curso_id(self, value):
+        from asignaturas.models import Curso
+        if not Curso.objects.filter(id=value).exists():
+            raise serializers.ValidationError("El curso especificado no existe")
+        return value
+
+    def validate_asistencias(self, value):
+        if not value:
+            raise serializers.ValidationError("Debe proporcionar al menos una asistencia")
+        for asistencia in value:
+            if 'matricula_id' not in asistencia or 'estado' not in asistencia:
+                raise serializers.ValidationError("Cada asistencia debe tener matricula_id y estado")
+        return value
+
+    def create(self, validated_data):
+        from asistencias.models import Asistencia
+        from asignaturas.models import MatriculaCurso
+        curso_id = validated_data['curso_id']
+        fecha = validated_data['fecha']
+        hora = validated_data['hora']
+        asistencias_data = validated_data['asistencias']
+        asistencias_creadas = []
+        for asistencia_data in asistencias_data:
+            matricula = MatriculaCurso.objects.get(id=asistencia_data['matricula_id'])
+            asistencia, _ = Asistencia.objects.update_or_create(
+                matricula=matricula,
+                fecha=fecha,
+                hora=hora,
+                defaults={'estado': asistencia_data['estado']}
+            )
+            asistencias_creadas.append(asistencia)
+        return asistencias_creadas
+
 
 # Serializers Notas
 class PeriodoAcademicoSerializer(serializers.ModelSerializer):
@@ -172,53 +229,77 @@ class TipoActividadSerializer(serializers.ModelSerializer):
     class Meta: 
         model = TipoActividad
         fields = ['id', 'nombre', 'descripcion', 'porcentaje']
-
-    def validate_porcentaje(self, value):
-        if value < 0 or value > 100:
-            raise serializers.ValidationError("El porcentaje debe estar entre 0 y 100")
-        return value
+        read_only_fields = ['id']
 
 class ActividadSerializer(serializers.ModelSerializer):
     tipo_nombre = serializers.CharField(source='tipo.nombre', read_only=True)
-    tipo_porcentaje = serializers.FloatField(source='tipo.porcentaje', read_only=True)
-    periodo_nombre = serializers.CharField(source='periodo.nombre', read_only=True)
-
     class Meta:
         model = Actividad
-        fields = [
-            'id', 'nombre', 'tipo', 'tipo_nombre', 'tipo_porcentaje',
-            'periodo', 'periodo_nombre', 'fecha_asignacion',
-            'fecha_entrega', 'descripcion'
-        ]
+        fields = ['id', 'tipo', 'tipo_nombre', 'nombre', 'descripcion', 'fecha_asignacion', 'fecha_entrega', 'periodo']
+        read_only_fields = ['id']
 
 class NotaSerializer(serializers.ModelSerializer):
-    estudiante_nombre = serializers.SerializerMethodField()
+    estudiante_nombre = serializers.CharField(source='estudiante.user.get_full_name', read_only=True)
     actividad_nombre = serializers.CharField(source='actividad.nombre', read_only=True)
-    tipo_actividad = serializers.CharField(source='actividad.tipo.nombre', read_only=True)
-    tipo_porcentaje = serializers.FloatField(source='actividad.tipo.porcentaje', read_only=True)
-    periodo = serializers.CharField(source='actividad.periodo.nombre', read_only=True)
 
     class Meta:
         model = Nota
         fields = [
-            'id', 'estudiante', 'estudiante_nombre',
-            'actividad', 'actividad_nombre', 'tipo_actividad',
-            'tipo_porcentaje', 'periodo', 'valor', 'observaciones',
-            'es_recuperacion', 'creado_en', 'actualizado_en'
+            'id', 'estudiante', 'estudiante_nombre', 'actividad', 'actividad_nombre', 'valor', 'observaciones', 'es_recuperacion'
         ]
+        read_only_fields = ['id']
 
-    def get_estudiante_nombre(self, obj):
-        return f"{obj.estudiante.nombres} {obj.estudiante.apellidos}"
+class NotaMasivaSerializer(serializers.Serializer):
+    actividad_id = serializers.IntegerField()
+    notas = serializers.ListField(
+        child=serializers.DictField(
+            child=serializers.CharField()
+        )
+    )
 
-    def validate_valor(self, value):
-        if value < 0 or value > 10:
-            raise serializers.ValidationError("El valor de la nota debe estar entre 0 y 10")
-        return round(value, 2)  # Redondear a 2 decimales
+    def validate_actividad_id(self, value):
+        try:
+            return Actividad.objects.get(id=value)
+        except Actividad.DoesNotExist:
+            raise serializers.ValidationError("La actividad especificada no existe")
 
-class BoletinPeriodoSerializer(serializers.Serializer):
-    periodo = PeriodoAcademicoSerializer()
-    notas_por_tipo = serializers.DictField()
-    promedio_periodo = serializers.FloatField()
+    def validate_notas(self, value):
+        if not value:
+            raise serializers.ValidationError("Debe proporcionar al menos una nota")
+        
+        for nota in value:
+            if 'estudiante_id' not in nota:
+                raise serializers.ValidationError("Cada nota debe tener un estudiante_id")
+            if 'valor' not in nota:
+                raise serializers.ValidationError("Cada nota debe tener un valor")
+            try:
+                valor = float(nota['valor'])
+                if valor < 0 or valor > 10:
+                    raise serializers.ValidationError(f"El valor {valor} debe estar entre 0 y 10")
+            except ValueError:
+                raise serializers.ValidationError(f"El valor {nota['valor']} no es un número válido")
+        
+        return value
+
+    def create(self, validated_data):
+        actividad = validated_data['actividad_id']
+        notas_data = validated_data['notas']
+        notas_creadas = []
+        
+        for nota_data in notas_data:
+            estudiante = get_object_or_404(Usuario, id=nota_data['estudiante_id'])
+            nota, _ = Nota.objects.update_or_create(
+                estudiante=estudiante,
+                actividad=actividad,
+                defaults={
+                    'valor': float(nota_data['valor']),
+                    'observaciones': nota_data.get('observaciones', ''),
+                    'es_recuperacion': nota_data.get('es_recuperacion', False)
+                }
+            )
+            notas_creadas.append(nota)
+        
+        return notas_creadas
 
 
 # Serializers Comportamiento
@@ -258,82 +339,38 @@ class CompromisoSerializer(serializers.ModelSerializer):
 class AsignaturaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asignatura
-        fields = [
-            'id', 'codigo', 'nombre', 
-            'descripcion', 'area_estudio'
-        ]
+        fields = ['id', 'codigo', 'nombre', 'descripcion', 'area_estudio', 'nivel_educativo', 'niveles_especificos', 'horas_semanales']
+        read_only_fields = ['id']
 
 class CursoSerializer(serializers.ModelSerializer):
-    nivel_display = serializers.CharField(source='get_nivel_display', read_only=True)
-    periodo_display = serializers.CharField(source='get_periodo_display', read_only=True)
-
     class Meta:
         model = Curso
-        fields = [
-            'id', 'nivel', 'nivel_display', 
-            'paralelo', 'cupo_maximo', 'estado',
-            'periodo', 'periodo_display'
-        ]
-
-class AsignaturaCursoSerializer(serializers.ModelSerializer):
-    curso_detalle = serializers.CharField(source='curso.__str__', read_only=True)
-    asignatura_detalle = serializers.CharField(source='asignatura.__str__', read_only=True)
-
-    class Meta:
-        model = AsignaturaCurso
-        fields = [
-            'id', 'curso', 'curso_detalle',
-            'asignatura', 'asignatura_detalle',
-            'horas_semanales', 'fecha_inicio', 'fecha_fin'
-        ]
-
+        fields = ['id', 'nivel', 'paralelo', 'cupo_maximo', 'estado']
+        read_only_fields = ['id']
 
 class HorarioSerializer(serializers.ModelSerializer):
-    dia_display = serializers.CharField(source='get_dia_display', read_only=True)
-    curso = serializers.SerializerMethodField()
-    asignatura = serializers.SerializerMethodField()
-    periodo = serializers.SerializerMethodField()
+    curso_nombre = serializers.CharField(source='curso.nombre_completo', read_only=True)
+    asignatura_nombre = serializers.CharField(source='asignatura.nombre', read_only=True)
 
     class Meta:
         model = Horario
-        fields = [
-            'id', 'curso', 'asignatura', 'periodo',
-            'dia', 'dia_display', 'hora_inicio', 'hora_fin'
-        ]
-
-    def get_curso(self, obj):
-        if obj.asignatura_curso:
-            curso = obj.asignatura_curso.curso
-            return f"{curso.get_nivel_display()}-{curso.paralelo}"
-        return None
-
-    def get_asignatura(self, obj):
-        if obj.asignatura_curso:
-            return obj.asignatura_curso.asignatura.nombre
-        return None
-
-    def get_periodo(self, obj):
-        if obj.asignatura_curso:
-            return obj.asignatura_curso.curso.get_periodo_display()
-        return None
+        fields = ['id', 'curso', 'curso_nombre', 'asignatura', 'asignatura_nombre', 'dia', 'hora_inicio', 'hora_fin']
+        read_only_fields = ['id']
 
 class MatriculaCursoSerializer(serializers.ModelSerializer):
-    estudiante_nombre = serializers.SerializerMethodField()
-    curso_detalle = serializers.SerializerMethodField()
-    estado_display = serializers.CharField(source='get_estado_display', read_only=True)
+    estudiante_nombre = serializers.CharField(source='estudiante.user.get_full_name', read_only=True)
+    curso_nombre = serializers.CharField(source='curso.nombre_completo', read_only=True)
 
     class Meta:
         model = MatriculaCurso
-        fields = [
-            'id', 'estudiante', 'estudiante_nombre',
-            'curso', 'curso_detalle',
-            'fecha_matricula', 'estado', 'estado_display'
-        ]
+        fields = ['id', 'estudiante', 'estudiante_nombre', 'curso', 'curso_nombre', 'fecha_matricula', 'estado']
+        read_only_fields = ['id']
 
-    def get_estudiante_nombre(self, obj):
-        return f"{obj.estudiante.nombres} {obj.estudiante.apellidos}"
+class EmptySerializer(serializers.Serializer):
+    pass
 
-    def get_curso_detalle(self, obj):
-        return str(obj.curso)
+class LogoutView(APIView):
+    serializer_class = EmptySerializer
+    ...
 
 

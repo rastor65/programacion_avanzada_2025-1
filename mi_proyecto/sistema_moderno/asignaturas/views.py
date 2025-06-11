@@ -17,8 +17,12 @@ class AsignaturaListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = Asignatura.objects.all()
         area = self.request.query_params.get('area', None)
+        nivel = self.request.query_params.get('nivel', None)
+        
         if area:
             queryset = queryset.filter(area_estudio=area)
+        if nivel:
+            queryset = queryset.filter(niveles_especificos__contains=[nivel])
         return queryset
 
 class AsignaturaDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -36,13 +40,9 @@ class CursoListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = Curso.objects.all()
         nivel = self.request.query_params.get('nivel', None)
-        periodo = self.request.query_params.get('periodo', None)
         
         if nivel:
             queryset = queryset.filter(nivel=nivel)
-        if periodo:
-            queryset = queryset.filter(periodo=periodo)
-            
         return queryset
 
 class CursoDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -59,11 +59,14 @@ class HorarioListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Horario.objects.all()
-        asignatura_curso_id = self.request.query_params.get('asignatura_curso', None)
+        curso_id = self.request.query_params.get('curso', None)
+        asignatura_id = self.request.query_params.get('asignatura', None)
         dia = self.request.query_params.get('dia', None)
         
-        if asignatura_curso_id:
-            queryset = queryset.filter(asignatura_curso_id=asignatura_curso_id)
+        if curso_id:
+            queryset = queryset.filter(curso_id=curso_id)
+        if asignatura_id:
+            queryset = queryset.filter(asignatura_id=asignatura_id)
         if dia:
             queryset = queryset.filter(dia=dia)
             
@@ -79,8 +82,8 @@ class HorarioPorCursoView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        curso_id = self.kwargs['curso_id']
-        return Horario.objects.filter(curso_id=curso_id)
+        curso_id = self.kwargs.get('curso_id')
+        return Horario.objects.filter(curso_id=curso_id).select_related('asignatura', 'curso')
 
 
 # Vistas de Matrículas en Cursos
@@ -118,6 +121,7 @@ class MatriculasPorEstudianteView(generics.ListAPIView):
             estudiante_id=estudiante_id,
             estado='ACTIVO'
         )
+<<<<<<< Updated upstream
 
 
 # Vistas de Asignaturas en Cursos
@@ -141,3 +145,5 @@ class AsignaturaCursoDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = AsignaturaCurso.objects.all()
     serializer_class = AsignaturaCursoSerializer
     permission_classes = [IsAuthenticated]
+=======
+>>>>>>> Stashed changes

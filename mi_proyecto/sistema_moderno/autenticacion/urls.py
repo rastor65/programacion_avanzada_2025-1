@@ -1,6 +1,6 @@
 from django.urls import path, include
 from .views import *
-from .views import CookieLoginView
+from .views import CookieLoginView, login_view, register_view
 
 urlpatterns = [
     path('hello/', HelloFromCookieView.as_view(), name='hello'),
@@ -10,5 +10,6 @@ urlpatterns = [
     path('roles/', RolListCreateView.as_view(), name='rol_list_create'),
     path('roles/<int:pk>/', RolRetrieveUpdateDestroyView.as_view(), name='rol_detail'),
     path('rol/asignar-rol/', UsuarioRolCreateView.as_view(), name='usuario_rol_create'),
-    
+    path('login-page/', login_view, name='login'),
+    path('register-page/', register_view, name='register'),
 ]

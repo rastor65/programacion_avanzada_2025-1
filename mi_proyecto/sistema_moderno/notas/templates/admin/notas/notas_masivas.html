@@ -1,0 +1,22 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>Asignación Masiva de Notas por Curso o Grado</h1>
+<p>Selecciona un <b>curso</b> (ej: 6-01) o un <b>grado</b> (ej: Sexto) para asignar notas a todos los estudiantes de ese grupo. Si seleccionas ambos, se usará el curso.</p>
+<form method="post">{% csrf_token %}
+<fieldset>
+    <legend>Selecciona el grado, curso y la actividad</legend>
+    {{ form.as_p }}
+    <button type="submit">Mostrar estudiantes</button>
+</fieldset>
+</form>
+{% if input_form %}
+<form method="post">{% csrf_token %}
+    <fieldset>
+        <legend>Notas para los estudiantes</legend>
+        {{ input_form.as_p }}
+        <button type="submit">Guardar notas</button>
+    </fieldset>
+</form>
+{% endif %}
+<a href="../">&larr; Volver</a>
+{% endblock %} 

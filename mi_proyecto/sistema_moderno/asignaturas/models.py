@@ -4,6 +4,24 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 
 
+class PeriodoAcademico(models.Model):
+    nombre = models.CharField(max_length=100)
+    numero = models.PositiveSmallIntegerField()
+    año_lectivo = models.PositiveIntegerField()
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField()
+    activo = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Período Académico"
+        verbose_name_plural = "Períodos Académicos"
+        ordering = ['-año_lectivo', 'numero']
+        unique_together = ('numero', 'año_lectivo')
+
+    def __str__(self):
+        return f"{self.nombre} ({self.año_lectivo})"
+
+
 # Curso
 class Curso(models.Model):
     NIVEL_CHOICES = [
@@ -18,13 +36,6 @@ class Curso(models.Model):
         ('9', 'Noveno'),
         ('10', 'Décimo'),
         ('11', 'Once')
-    ]
-
-    PERIODO_CHOICES = [
-        ('P1', 'Primer Periodo'),
-        ('P2', 'Segundo Periodo'),
-        ('P3', 'Tercer Periodo'),
-        ('P4', 'Cuarto Periodo'),
     ]
 
     nivel = models.CharField(
@@ -44,18 +55,12 @@ class Curso(models.Model):
         default=True,
         help_text="Estado del curso (activo/inactivo)"
     )
-    periodo = models.CharField(
-        max_length=2,
-        choices=PERIODO_CHOICES,
-        help_text="Periodo académico del curso",
-        default='P1'
-    )
 
     class Meta:
         verbose_name = "Curso"
         verbose_name_plural = "Cursos"
-        unique_together = ['nivel', 'paralelo', 'periodo']
-        ordering = ['periodo', 'nivel', 'paralelo']
+        unique_together = ['nivel', 'paralelo']  # Elimina 'periodo'
+        ordering = ['nivel', 'paralelo']  # Elimina 'periodo'
 
     def clean(self):
         if self.paralelo and len(self.paralelo) == 1:
@@ -63,11 +68,17 @@ class Curso(models.Model):
         super().clean()
 
     def __str__(self):
-        return f"{self.get_nivel_display()}-{self.paralelo} ({self.get_periodo_display()})"
+        return f"{self.get_nivel_display()}-{self.paralelo}"  # Elimina referencia a periodo
 
 
 # Asignatura
 class Asignatura(models.Model):
+    NIVELES_CHOICES = [
+        ('PRIMARIA', 'Primaria'),
+        ('BACHILLERATO', 'Bachillerato'),
+        ('TODOS', 'Todos los niveles')
+    ]
+
     codigo = models.CharField(
         max_length=30, 
         unique=True,
@@ -85,6 +96,21 @@ class Asignatura(models.Model):
         max_length=100,
         help_text="Área de estudio de la asignatura"
     )
+    nivel_educativo = models.CharField(
+        max_length=20,
+        choices=NIVELES_CHOICES,
+        default='TODOS',
+        help_text="Nivel educativo en el que se imparte la asignatura"
+    )
+    niveles_especificos = models.JSONField(
+        default=list,
+        help_text="Lista de niveles específicos donde se imparte la asignatura (ej: ['6', '7', '8'] para grados 6-8)"
+    )
+    horas_semanales = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1)],
+        help_text="Número de horas semanales de la asignatura",
+        default=1
+    )
 
     class Meta:
         verbose_name = "Asignatura"
@@ -94,43 +120,35 @@ class Asignatura(models.Model):
     def __str__(self):
         return f"{self.codigo} - {self.nombre} - {self.area_estudio}"
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        
+        # Validar que los niveles específicos sean válidos
+        if self.nivel_educativo == 'PRIMARIA':
+            niveles_validos = ['1', '2', '3', '4', '5']
+        elif self.nivel_educativo == 'BACHILLERATO':
+            niveles_validos = ['6', '7', '8', '9', '10', '11']
+        else:  # TODOS
+            niveles_validos = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']
+        
+        for nivel in self.niveles_especificos:
+            if nivel not in niveles_validos:
+                raise ValidationError(f'El nivel {nivel} no es válido para el nivel educativo {self.nivel_educativo}')
 
+    def se_imparte_en_nivel(self, nivel):
+        """
+        Verifica si la asignatura se imparte en un nivel específico
+        """
+        if self.nivel_educativo == 'TODOS':
+            return True
+        return str(nivel) in self.niveles_especificos
 
-# Asignatura en un curso
-class AsignaturaCurso(models.Model):
-    # Curso donde se va a dar la asignatura
-    curso = models.ForeignKey(
-        Curso,
-        on_delete=models.CASCADE,
-        related_name='asignaturas',
-        help_text="Curso al que pertenece esta asignatura"
-    )
-    asignatura = models.ForeignKey(
-        Asignatura,
-        on_delete=models.CASCADE,
-        related_name='cursos',
-        help_text="Asignatura impartida en este curso"
-    )
-    horas_semanales = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1)],
-        help_text="Número de horas semanales de la asignatura"
-    )
-    fecha_inicio = models.DateField(
-        help_text="Fecha de inicio de la asignatura en este curso"
-    )
-    fecha_fin = models.DateField(
-        help_text="Fecha de finalización de la asignatura en este curso"
-    )
-
-    class Meta: 
-        verbose_name = "Asignatura en Curso"
-        verbose_name_plural = "Asignaturas en Cursos"
-        unique_together = ['curso', 'asignatura']
-        ordering = ['curso', 'asignatura']
-
-    def __str__(self):
-        return f"{self.curso} - {self.asignatura}"
-
+    def get_cursos_disponibles(self):
+        """
+        Retorna los cursos disponibles para esta asignatura
+        """
+        from .models import Curso
+        return Curso.objects.filter(nivel__in=self.niveles_especificos)
 
 
 # Horario de una asignatura en un curso
@@ -143,13 +161,19 @@ class Horario(models.Model):
         ('VIE', 'Viernes')
     ]
 
-    asignatura_curso = models.ForeignKey(
-        AsignaturaCurso,
+    asignatura = models.ForeignKey(
+        Asignatura,
         on_delete=models.CASCADE,
         related_name='horarios',
-        help_text="Asignatura del curso para este horario",
+        help_text="Asignatura para este horario",
         null=True,  
         blank=True  
+    )
+    curso = models.ForeignKey(
+        Curso,
+        on_delete=models.CASCADE,
+        related_name='horarios',
+        help_text="Curso para este horario"
     )
     dia = models.CharField(
         max_length=3,
@@ -167,11 +191,29 @@ class Horario(models.Model):
         verbose_name = "Horario"
         verbose_name_plural = "Horarios"
         ordering = ['dia', 'hora_inicio']
-        unique_together = ['asignatura_curso', 'dia', 'hora_inicio']
+        unique_together = ['asignatura', 'curso', 'dia', 'hora_inicio']
 
     def __str__(self):
-        return f"{self.asignatura_curso} - {self.get_dia_display()} {self.hora_inicio.strftime('%H:%M')} - {self.hora_fin.strftime('%H:%M')}"
+        return f"{self.asignatura} - {self.curso} - {self.get_dia_display()} {self.hora_inicio.strftime('%H:%M')} - {self.hora_fin.strftime('%H:%M')}"
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        
+        # Validar que la asignatura se imparte en el nivel del curso
+        if not self.asignatura.se_imparte_en_nivel(self.curso.nivel):
+            raise ValidationError(f'La asignatura {self.asignatura} no se imparte en el nivel {self.curso.get_nivel_display()}')
+        
+        # Validar que no haya solapamiento de horarios
+        horarios_solapados = Horario.objects.filter(
+            curso=self.curso,
+            dia=self.dia
+        ).exclude(id=self.id)
+        
+        for horario in horarios_solapados:
+            if (self.hora_inicio <= horario.hora_fin and self.hora_fin >= horario.hora_inicio):
+                raise ValidationError(
+                    f'El horario se solapa con {horario.asignatura} ({horario.hora_inicio}-{horario.hora_fin})'
+                )
 
 
 # Matrícula de un estudiante en un curso
@@ -223,3 +265,10 @@ class MatriculaCurso(models.Model):
         
         if matriculas_activas >= self.curso.cupo_maximo and self.estado == 'ACTIVO':
             raise ValidationError('El curso ha alcanzado su cupo máximo de estudiantes')
+
+
+class Nota(models.Model):
+    estudiante = models.ForeignKey('autenticacion.Usuario', on_delete=models.CASCADE)
+    asignatura = models.ForeignKey(Asignatura, on_delete=models.CASCADE)
+    periodo_academico = models.ForeignKey(PeriodoAcademico, on_delete=models.CASCADE)
+    valor = models.DecimalField(max_digits=4, decimal_places=2, validators=[MinValueValidator(0), MaxValueValidator(10)])
