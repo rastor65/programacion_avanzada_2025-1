@@ -122,6 +122,7 @@ class MatriculasPorEstudianteView(generics.ListAPIView):
             estado='ACTIVO'
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 
 # Vistas de Asignaturas en Cursos
@@ -145,5 +146,7 @@ class AsignaturaCursoDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = AsignaturaCurso.objects.all()
     serializer_class = AsignaturaCursoSerializer
     permission_classes = [IsAuthenticated]
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

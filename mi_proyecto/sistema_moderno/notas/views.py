@@ -15,6 +15,7 @@ from django.db import transaction
 # Create your views here.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 # Vistas de Periodo Academico
 class PeriodoAcademicoListCreateView(generics.ListCreateAPIView):
     queryset = PeriodoAcademico.objects.all()
@@ -35,6 +36,8 @@ class PeriodoAcademicoListCreateView(generics.ListCreateAPIView):
 
 
 # Vistas de Tipo de Actividad
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 class TipoActividadListCreateView(generics.ListCreateAPIView):
