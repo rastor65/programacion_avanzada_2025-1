@@ -1,0 +1,191 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Dashboard Estudiante - Colegio San Juan{% endblock %}
+
+{% block role_title %}Panel de Estudiante{% endblock %}
+
+{% block header_title %}Mi Portal Educativo{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    /* Estilos específicos para el dashboard de estudiante */
+    .task-badge {
+        transition: all 0.3s ease;
+    }
+    
+    /* Modo claro */
+    .welcome-card {
+        background-color: #ffffff;
+        color: #1f2937;
+    }
+    .welcome-card p {
+        color: #4b5563;
+    }
+    .card-title {
+        color: #1f2937;
+    }
+    
+    /* Modo oscuro */
+    .dark .welcome-card {
+        background-color: #2d3748;
+        color: #f7fafc;
+    }
+    .dark .welcome-card p {
+        color: #e2e8f0;
+    }
+    .dark .card-title {
+        color: #f7fafc;
+    }
+</style>
+{% endblock %}
+
+{% block sidebar_menu %}
+    <a href="#" class="menu-item active flex items-center px-3 py-2 text-sm font-medium rounded-md text-blue-700 bg-blue-50 dark:bg-blue-900 dark:text-blue-300">
+        <i class="fas fa-home mr-3 text-blue-600 dark:text-blue-400"></i>
+        Inicio
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-book mr-3 text-gray-500 dark:text-gray-400"></i>
+        Mis Cursos
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-clipboard-list mr-3 text-gray-500 dark:text-gray-400"></i>
+        Calificaciones
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-calendar-alt mr-3 text-gray-500 dark:text-gray-400"></i>
+        Horarios
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-tasks mr-3 text-gray-500 dark:text-gray-400"></i>
+        Tareas
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-bell mr-3 text-gray-500 dark:text-gray-400"></i>
+        Comunicados
+    </a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="welcome-card bg-white p-6 rounded-lg shadow mb-6 dark:bg-gray-800">
+    <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Bienvenido, {{ user.perfil.nombres }}!</h2>
+    <p class="text-gray-600 dark:text-gray-300">Esta es tu página de inicio donde podrás ver toda la información relevante para tu proceso educativo.</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Próximas tareas -->
+    <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="card-title text-lg font-semibold text-gray-800 dark:text-white">Próximas Tareas</h3>
+            <a href="#" class="text-blue-600 text-sm hover:underline dark:text-blue-400">Ver todas</a>
+        </div>
+        <ul class="space-y-4">
+            <li class="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
+                <div>
+                    <p class="font-medium text-gray-800 dark:text-white">Ensayo de Español</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Fecha límite: 22 de junio</p>
+                </div>
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 task-badge">Pendiente</span>
+            </li>
+            <li class="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
+                <div>
+                    <p class="font-medium text-gray-800 dark:text-white">Ejercicios de Matemáticas</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Fecha límite: 25 de junio</p>
+                </div>
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 task-badge">En progreso</span>
+            </li>
+            <li class="flex items-center justify-between">
+                <div>
+                    <p class="font-medium text-gray-800 dark:text-white">Proyecto de Ciencias</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Fecha límite: 30 de junio</p>
+                </div>
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 task-badge">En progreso</span>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Calificaciones recientes -->
+    <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="card-title text-lg font-semibold text-gray-800 dark:text-white">Calificaciones Recientes</h3>
+            <a href="#" class="text-blue-600 text-sm hover:underline dark:text-blue-400">Ver todas</a>
+        </div>
+        <ul class="space-y-4">
+            <li class="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
+                <div>
+                    <p class="font-medium text-gray-800 dark:text-white">Examen de Matemáticas</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">10 de junio, 2025</p>
+                </div>
+                <span class="px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">8.5</span>
+            </li>
+            <li class="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
+                <div>
+                    <p class="font-medium text-gray-800 dark:text-white">Quiz de Español</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">8 de junio, 2025</p>
+                </div>
+                <span class="px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">9.0</span>
+            </li>
+            <li class="flex items-center justify-between">
+                <div>
+                    <p class="font-medium text-gray-800 dark:text-white">Trabajo de Historia</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">5 de junio, 2025</p>
+                </div>
+                <span class="px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">8.0</span>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Horario del día -->
+<div class="mt-6 bg-white p-6 rounded-lg shadow dark:bg-gray-800">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="card-title text-lg font-semibold text-gray-800 dark:text-white">Horario de Hoy</h3>
+        <span class="text-sm text-gray-500 dark:text-gray-400">Lunes, 13 de junio</span>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full">
+            <thead>
+                <tr>
+                    <th class="py-2 px-4 bg-gray-50 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600">Hora</th>
+                    <th class="py-2 px-4 bg-gray-50 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600">Asignatura</th>
+                    <th class="py-2 px-4 bg-gray-50 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600">Profesor</th>
+                    <th class="py-2 px-4 bg-gray-50 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600">Aula</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                <tr>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">7:30 - 8:30</td>
+                    <td class="py-3 px-4 text-sm font-medium text-gray-800 dark:text-white">Matemáticas</td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">Prof. Rodríguez</td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">201</td>
+                </tr>
+                <tr>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">8:30 - 9:30</td>
+                    <td class="py-3 px-4 text-sm font-medium text-gray-800 dark:text-white">Ciencias</td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">Prof. García</td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">Lab 3</td>
+                </tr>
+                <tr>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">9:30 - 10:00</td>
+                    <td class="py-3 px-4 text-sm font-medium text-gray-500 italic dark:text-gray-400">Recreo</td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">-</td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">-</td>
+                </tr>
+                <tr>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">10:00 - 11:00</td>
+                    <td class="py-3 px-4 text-sm font-medium text-gray-800 dark:text-white">Español</td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">Prof. Martínez</td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">203</td>
+                </tr>
+                <tr>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">11:00 - 12:00</td>
+                    <td class="py-3 px-4 text-sm font-medium text-gray-800 dark:text-white">Historia</td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">Prof. López</td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">205</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    </div>
+{% endblock %} 

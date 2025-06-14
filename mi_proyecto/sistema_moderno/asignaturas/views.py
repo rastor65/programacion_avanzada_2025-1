@@ -121,35 +121,3 @@ class MatriculasPorEstudianteView(generics.ListAPIView):
             estudiante_id=estudiante_id,
             estado='ACTIVO'
         )
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-
-
-# Vistas de Asignaturas en Cursos
-class AsignaturaCursoListCreateView(generics.ListCreateAPIView):
-    serializer_class = AsignaturaCursoSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        queryset = AsignaturaCurso.objects.all()
-        curso_id = self.request.query_params.get('curso', None)
-        asignatura_id = self.request.query_params.get('asignatura', None)
-        
-        if curso_id:
-            queryset = queryset.filter(curso_id=curso_id)
-        if asignatura_id:
-            queryset = queryset.filter(asignatura_id=asignatura_id)
-            
-        return queryset
-
-class AsignaturaCursoDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = AsignaturaCurso.objects.all()
-    serializer_class = AsignaturaCursoSerializer
-    permission_classes = [IsAuthenticated]
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes

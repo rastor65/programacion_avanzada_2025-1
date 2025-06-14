@@ -15,9 +15,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from autenticacion.views import *
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+from autenticacion.views import *
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,   
@@ -41,14 +42,17 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('usuarios/', UsuarioListView.as_view(), name='usuario_list_create'),
     path('auth/', include('autenticacion.urls')),
-    path('usuarios/<int:pk>/', UsuarioRetrieveUpdateDestroyView.as_view(), name='usuario_detail'),
-    path('usuarios/', UsuarioListView.as_view(), name='usuarios-list-create'),
-    path('usuarios/<int:pk>/', UsuarioRetrieveUpdateDestroyView.as_view(), name='usuarios-detail'),  
+    path('asignaturas/', include('asignaturas.urls')),
+    path('notas/', include('notas.urls')),
+    path('comportamiento/', include('comportamiento.urls')),
+    path('asistencias/', include('asistencias.urls')),
+    path('notificaciones/', include('notificaciones.urls')),
+    path('usuarios/<int:pk>/', UsuarioRetrieveUpdateDestroyView.as_view(), name='usuario-detail'),
+    path('usuarios/', UsuarioListView.as_view(), name='usuario-list-create'),
     path('api/notas/', include('notas.urls')),  
     path('api/asignaturas/', include('asignaturas.urls')),  # URLs de asignaturas
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

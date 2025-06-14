@@ -1,15 +1,19 @@
-from django.urls import path, include
-from .views import *
-from .views import CookieLoginView, login_view, register_view
+from django.urls import path
+from . import views
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
-    path('hello/', HelloFromCookieView.as_view(), name='hello'),
-    path('login/', CookieLoginView.as_view(), name='login_cookie'),
-    path('register/', RegisterView.as_view(), name='register'),
-    path('logout/', LogoutView.as_view(), name='logout'),
-    path('roles/', RolListCreateView.as_view(), name='rol_list_create'),
-    path('roles/<int:pk>/', RolRetrieveUpdateDestroyView.as_view(), name='rol_detail'),
-    path('rol/asignar-rol/', UsuarioRolCreateView.as_view(), name='usuario_rol_create'),
-    path('login-page/', login_view, name='login'),
-    path('register-page/', register_view, name='register'),
+    # URLs de autenticación
+    path('', views.login_view, name='login'),
+    path('register/', views.register_view, name='register'),
+    path('logout/', views.LogoutView.as_view(), name='logout'),
+    
+    # URLs de dashboard
+    path('dashboard/admin/', views.admin_dashboard, name='admin_dashboard'),
+    path('dashboard/profesor/', views.profesor_dashboard, name='profesor_dashboard'),
+    path('dashboard/estudiante/', views.estudiante_dashboard, name='estudiante_dashboard'),
+    
+    # URLs de API
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

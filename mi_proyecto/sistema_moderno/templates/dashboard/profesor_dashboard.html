@@ -1,0 +1,289 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Dashboard Profesor - Colegio San Juan{% endblock %}
+
+{% block role_title %}Panel de Profesor{% endblock %}
+
+{% block header_title %}Panel Docente{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    /* Estilos específicos para el dashboard de profesor */
+    .stats-card {
+        transition: all 0.3s ease;
+    }
+    
+    /* Modo claro */
+    .welcome-card {
+        background-color: #ffffff;
+        color: #1f2937;
+    }
+    .welcome-card p {
+        color: #4b5563;
+    }
+    .card-title {
+        color: #1f2937;
+    }
+    .stats-value {
+        color: #1f2937;
+    }
+    .class-item {
+        background-color: #f9fafb;
+    }
+    
+    /* Modo oscuro */
+    .dark .welcome-card {
+        background-color: #2d3748;
+        color: #f7fafc;
+    }
+    .dark .welcome-card p {
+        color: #e2e8f0;
+    }
+    .dark .card-title {
+        color: #f7fafc;
+    }
+    .dark .stats-value {
+        color: #f7fafc;
+    }
+    .dark .class-item {
+        background-color: #374151;
+    }
+</style>
+{% endblock %}
+
+{% block sidebar_menu %}
+    <a href="#" class="menu-item active flex items-center px-3 py-2 text-sm font-medium rounded-md text-blue-700 bg-blue-50 dark:bg-blue-900 dark:text-blue-300">
+        <i class="fas fa-home mr-3 text-blue-600 dark:text-blue-400"></i>
+        Inicio
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-user-graduate mr-3 text-gray-500 dark:text-gray-400"></i>
+        Mis Estudiantes
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-book mr-3 text-gray-500 dark:text-gray-400"></i>
+        Mis Cursos
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-clipboard-list mr-3 text-gray-500 dark:text-gray-400"></i>
+        Calificaciones
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-calendar-alt mr-3 text-gray-500 dark:text-gray-400"></i>
+        Horarios
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-tasks mr-3 text-gray-500 dark:text-gray-400"></i>
+        Tareas
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-bell mr-3 text-gray-500 dark:text-gray-400"></i>
+        Comunicados
+    </a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="welcome-card bg-white p-6 rounded-lg shadow mb-6 dark:bg-gray-800">
+    <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Bienvenido, Profesor {{ user.perfil.nombres }}</h2>
+    <p class="text-gray-600 dark:text-gray-300">Este es su panel de control docente donde puede gestionar sus clases, estudiantes y calificaciones.</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <!-- Estadísticas rápidas -->
+    <div class="stats-card bg-white p-6 rounded-lg shadow dark:bg-gray-800">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="card-title text-lg font-semibold text-gray-800 dark:text-white">Cursos Asignados</h3>
+            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center dark:bg-blue-900">
+                <i class="fas fa-chalkboard text-blue-600 dark:text-blue-300"></i>
+            </div>
+        </div>
+        <p class="stats-value text-3xl font-bold text-gray-800 dark:text-white">5</p>
+        <p class="text-sm text-gray-500 mt-1 dark:text-gray-400">Periodo actual</p>
+    </div>
+    
+    <div class="stats-card bg-white p-6 rounded-lg shadow dark:bg-gray-800">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="card-title text-lg font-semibold text-gray-800 dark:text-white">Estudiantes</h3>
+            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center dark:bg-green-900">
+                <i class="fas fa-user-graduate text-green-600 dark:text-green-300"></i>
+            </div>
+        </div>
+        <p class="stats-value text-3xl font-bold text-gray-800 dark:text-white">120</p>
+        <p class="text-sm text-gray-500 mt-1 dark:text-gray-400">Total de estudiantes</p>
+    </div>
+    
+    <div class="stats-card bg-white p-6 rounded-lg shadow dark:bg-gray-800">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="card-title text-lg font-semibold text-gray-800 dark:text-white">Calificaciones</h3>
+            <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center dark:bg-yellow-900">
+                <i class="fas fa-star text-yellow-600 dark:text-yellow-300"></i>
+            </div>
+        </div>
+        <p class="stats-value text-3xl font-bold text-gray-800 dark:text-white">45</p>
+        <p class="text-sm text-gray-500 mt-1 dark:text-gray-400">Pendientes por revisar</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Próximas clases -->
+    <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="card-title text-lg font-semibold text-gray-800 dark:text-white">Próximas Clases</h3>
+            <a href="#" class="text-blue-600 text-sm hover:underline dark:text-blue-400">Ver horario completo</a>
+        </div>
+        <ul class="space-y-3">
+            <li class="class-item flex items-center justify-between p-3 bg-gray-50 rounded-lg dark:bg-gray-700">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3 dark:bg-blue-900">
+                        <i class="fas fa-book text-blue-600 dark:text-blue-300"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-800 dark:text-white">Matemáticas</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">8:30 - 9:30 • 8° Grado</p>
+                    </div>
+                </div>
+                <span class="text-sm text-gray-500 dark:text-gray-400">Aula 201</span>
+            </li>
+            <li class="class-item flex items-center justify-between p-3 bg-gray-50 rounded-lg dark:bg-gray-700">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3 dark:bg-green-900">
+                        <i class="fas fa-calculator text-green-600 dark:text-green-300"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-800 dark:text-white">Álgebra</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">10:00 - 11:00 • 9° Grado</p>
+                    </div>
+                </div>
+                <span class="text-sm text-gray-500 dark:text-gray-400">Aula 205</span>
+            </li>
+            <li class="class-item flex items-center justify-between p-3 bg-gray-50 rounded-lg dark:bg-gray-700">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3 dark:bg-purple-900">
+                        <i class="fas fa-square-root-alt text-purple-600 dark:text-purple-300"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-800 dark:text-white">Geometría</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">11:30 - 12:30 • 7° Grado</p>
+                    </div>
+                </div>
+                <span class="text-sm text-gray-500 dark:text-gray-400">Aula 203</span>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Actividades pendientes -->
+    <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="card-title text-lg font-semibold text-gray-800 dark:text-white">Actividades Pendientes</h3>
+            <a href="#" class="text-blue-600 text-sm hover:underline dark:text-blue-400">Ver todas</a>
+        </div>
+        <ul class="space-y-3">
+            <li class="flex items-center justify-between p-3 border-l-4 border-red-500 bg-red-50 rounded-r-lg dark:bg-red-900/20 dark:border-red-700">
+                <div>
+                    <p class="font-medium text-gray-800 dark:text-white">Revisar exámenes de 9° Grado</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Vence: Hoy</p>
+                </div>
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">Urgente</span>
+            </li>
+            <li class="flex items-center justify-between p-3 border-l-4 border-yellow-500 bg-yellow-50 rounded-r-lg dark:bg-yellow-900/20 dark:border-yellow-700">
+                <div>
+                    <p class="font-medium text-gray-800 dark:text-white">Preparar material para Álgebra</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Vence: Mañana</p>
+                </div>
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">Importante</span>
+            </li>
+            <li class="flex items-center justify-between p-3 border-l-4 border-blue-500 bg-blue-50 rounded-r-lg dark:bg-blue-900/20 dark:border-blue-700">
+                <div>
+                    <p class="font-medium text-gray-800 dark:text-white">Reunión de profesores</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Vence: En 3 días</p>
+                </div>
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">Programado</span>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Rendimiento de estudiantes -->
+<div class="mt-6 bg-white p-6 rounded-lg shadow dark:bg-gray-800">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="card-title text-lg font-semibold text-gray-800 dark:text-white">Rendimiento de Estudiantes</h3>
+        <div>
+            <select class="text-sm border rounded-md px-3 py-1 text-gray-800 border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <option>Matemáticas 8° Grado</option>
+                <option>Álgebra 9° Grado</option>
+                <option>Geometría 7° Grado</option>
+            </select>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full">
+            <thead>
+                <tr>
+                    <th class="py-2 px-4 bg-gray-50 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600">Estudiante</th>
+                    <th class="py-2 px-4 bg-gray-50 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600">Promedio</th>
+                    <th class="py-2 px-4 bg-gray-50 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600">Asistencia</th>
+                    <th class="py-2 px-4 bg-gray-50 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600">Tareas</th>
+                    <th class="py-2 px-4 bg-gray-50 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                <tr>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-white">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white mr-3">
+                                <span>JM</span>
+                            </div>
+                            <span>Juan Martínez</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-white">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">9.2</span>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-white">98%</td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-white">15/15</td>
+                    <td class="py-3 px-4 text-sm">
+                        <button class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Ver detalles</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-white">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white mr-3">
+                                <span>MR</span>
+                            </div>
+                            <span>María Rodríguez</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-white">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">8.7</span>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-white">95%</td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-white">14/15</td>
+                    <td class="py-3 px-4 text-sm">
+                        <button class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Ver detalles</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-white">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white mr-3">
+                                <span>PG</span>
+                            </div>
+                            <span>Pedro Gómez</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-white">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">6.5</span>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-white">80%</td>
+                    <td class="py-3 px-4 text-sm text-gray-800 dark:text-white">10/15</td>
+                    <td class="py-3 px-4 text-sm">
+                        <button class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Ver detalles</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    </div>
+{% endblock %} 

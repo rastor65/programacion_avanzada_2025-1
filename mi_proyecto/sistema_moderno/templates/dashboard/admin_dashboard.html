@@ -1,0 +1,494 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Admin Dashboard - Colegio San Juan{% endblock %}
+
+{% block role_title %}Panel Administrativo{% endblock %}
+
+{% block header_title %}Panel de Control Administrativo{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    #estudiantesChart, #rendimientoChart {
+        width: 100%;
+        height: 400px;
+    }
+    .chart-container {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Estilos para tarjetas en modo claro */
+    .card {
+        background-color: #ffffff;
+        border-color: #e5e7eb;
+    }
+    .card h3 {
+        color: #1f2937;
+    }
+    
+    /* Estilos para modo oscuro */
+    .dark .chart-container {
+        background: #2d3748;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .dark .card {
+        background-color: #2d3748 !important;
+        border-color: #4a5568 !important;
+    }
+    .dark .card h3 {
+        color: #f7fafc !important;
+    }
+</style>
+{% endblock %}
+
+{% block sidebar_menu %}
+    <a href="{% url 'admin_dashboard' %}" class="menu-item active flex items-center px-3 py-2 text-sm font-medium rounded-md text-blue-700 bg-blue-50 dark:bg-blue-900 dark:text-blue-300">
+        <i class="fas fa-tachometer-alt mr-3 text-blue-600 dark:text-blue-400"></i>
+        Resumen
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-user-graduate mr-3 text-gray-500 dark:text-gray-400"></i>
+        Estudiantes
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-chalkboard-teacher mr-3 text-gray-500 dark:text-gray-400"></i>
+        Profesores
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-clipboard-list mr-3 text-gray-500 dark:text-gray-400"></i>
+        Calificaciones
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-calendar-alt mr-3 text-gray-500 dark:text-gray-400"></i>
+        Horarios
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-book mr-3 text-gray-500 dark:text-gray-400"></i>
+        Cursos
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-money-bill-wave mr-3 text-gray-500 dark:text-gray-400"></i>
+        Pagos
+    </a>
+    <a href="#" class="menu-item flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <i class="fas fa-bell mr-3 text-gray-500 dark:text-gray-400"></i>
+        Comunicados
+    </a>
+{% endblock %}
+
+{% block dashboard_content %}
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="card bg-white p-6 rounded-lg shadow-sm border border-gray-200 card-hover transition-all dark:bg-gray-800 dark:border-gray-700">
+            <div class="flex justify-between">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Estudiantes</p>
+                    <h3 class="text-2xl font-bold mt-2 text-gray-800 dark:text-white">{{ total_estudiantes }}</h3>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center dark:bg-blue-900">
+                    <i class="fas fa-user-graduate text-blue-600 text-xl dark:text-blue-300"></i>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center">
+                <span class="text-green-500 text-sm flex items-center dark:text-green-400">
+                    <i class="fas fa-arrow-up mr-1"></i> {{ porcentaje_estudiantes }}%
+                </span>
+                <span class="text-gray-500 text-sm ml-2 dark:text-gray-400">vs último mes</span>
+            </div>
+        </div>
+        
+        <div class="card bg-white p-6 rounded-lg shadow-sm border border-gray-200 card-hover transition-all dark:bg-gray-800 dark:border-gray-700">
+            <div class="flex justify-between">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Profesores</p>
+                    <h3 class="text-2xl font-bold mt-2 text-gray-800 dark:text-white">{{ total_profesores }}</h3>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center dark:bg-green-900">
+                    <i class="fas fa-chalkboard-teacher text-green-600 text-xl dark:text-green-300"></i>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center">
+                <span class="text-green-500 text-sm flex items-center dark:text-green-400">
+                    <i class="fas fa-plus mr-1"></i> {{ nuevos_profesores }}
+                </span>
+                <span class="text-gray-500 text-sm ml-2 dark:text-gray-400">nuevos este mes</span>
+            </div>
+        </div>
+
+        <div class="card bg-white p-6 rounded-lg shadow-sm border border-gray-200 card-hover transition-all dark:bg-gray-800 dark:border-gray-700">
+            <div class="flex justify-between">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Cursos Activos</p>
+                    <h3 class="text-2xl font-bold mt-2 text-gray-800 dark:text-white">{{ total_cursos }}</h3>
+                </div>
+                <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center dark:bg-yellow-900">
+                    <i class="fas fa-book text-yellow-600 text-xl dark:text-yellow-300"></i>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center">
+                <span class="text-blue-500 text-sm flex items-center dark:text-blue-400">
+                    <i class="fas fa-info-circle mr-1"></i> 
+                </span>
+                <span class="text-gray-500 text-sm ml-2 dark:text-gray-400">{{ cursos_por_grado }} por grado</span>
+            </div>
+        </div>
+
+        <div class="card bg-white p-6 rounded-lg shadow-sm border border-gray-200 card-hover transition-all dark:bg-gray-800 dark:border-gray-700">
+            <div class="flex justify-between">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Pagos Pendientes</p>
+                    <h3 class="text-2xl font-bold mt-2 text-gray-800 dark:text-white">{{ pagos_pendientes }}</h3>
+                </div>
+                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center dark:bg-red-900">
+                    <i class="fas fa-exclamation-circle text-red-600 text-xl dark:text-red-300"></i>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center">
+                <span class="text-red-500 text-sm flex items-center dark:text-red-400">
+                    <i class="fas fa-arrow-up mr-1"></i> {{ porcentaje_pagos }}%
+                </span>
+                <span class="text-gray-500 text-sm ml-2 dark:text-gray-400">vs mes pasado</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="chart-container dark:bg-gray-800">
+            <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Distribución de Estudiantes por Grado</h3>
+            <div id="estudiantesChart"></div>
+        </div>
+        
+        <div class="chart-container dark:bg-gray-800">
+            <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Rendimiento Académico</h3>
+            <div id="rendimientoChart"></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<!-- Resources -->
+<script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Dark.js"></script>
+
+<script>
+am5.ready(function() {
+    // Datos de Django
+    const estudiantesData = JSON.parse('{{ estudiantes_data|safe }}');
+    const rendimientoData = JSON.parse('{{ rendimiento_data|safe }}');
+    
+    // Detectar modo oscuro
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    
+    // Gráfico de Distribución de Estudiantes
+    var root = am5.Root.new("estudiantesChart");
+    
+    // Aplicar tema según modo
+    if (isDarkMode) {
+        root.setThemes([
+            am5themes_Animated.new(root),
+            am5themes_Dark.new(root)
+        ]);
+    } else {
+        root.setThemes([am5themes_Animated.new(root)]);
+    }
+
+    var chart = root.container.children.push(
+        am5xy.XYChart.new(root, {
+            panX: false,
+            panY: false,
+            wheelX: "panX",
+            wheelY: "zoomX",
+            paddingLeft: 0,
+            layout: root.verticalLayout
+        })
+    );
+
+    var xAxis = chart.xAxes.push(
+        am5xy.CategoryAxis.new(root, {
+            categoryField: "grado",
+            renderer: am5xy.AxisRendererX.new(root, {
+                minGridDistance: 30
+            }),
+            tooltip: am5.Tooltip.new(root, {})
+        })
+    );
+    xAxis.data.setAll(estudiantesData);
+
+    var yAxis = chart.yAxes.push(
+        am5xy.ValueAxis.new(root, {
+            renderer: am5xy.AxisRendererY.new(root, {
+                strokeOpacity: 0.1
+            })
+        })
+    );
+
+    var series = chart.series.push(
+        am5xy.ColumnSeries.new(root, {
+            name: "Estudiantes",
+            xAxis: xAxis,
+            yAxis: yAxis,
+            valueYField: "cantidad",
+            categoryXField: "grado",
+            tooltip: am5.Tooltip.new(root, {
+                labelText: "{valueY} estudiantes"
+            })
+        })
+    );
+
+    series.columns.template.setAll({
+        cornerRadiusTL: 5,
+        cornerRadiusTR: 5,
+        strokeOpacity: 0
+    });
+
+    series.data.setAll(estudiantesData);
+
+    // Gráfico de Rendimiento Académico
+    var root2 = am5.Root.new("rendimientoChart");
+    
+    // Aplicar tema según modo
+    if (isDarkMode) {
+        root2.setThemes([
+            am5themes_Animated.new(root2),
+            am5themes_Dark.new(root2)
+        ]);
+    } else {
+        root2.setThemes([am5themes_Animated.new(root2)]);
+    }
+
+    var chart2 = root2.container.children.push(
+        am5xy.XYChart.new(root2, {
+            panX: false,
+            panY: false,
+            wheelX: "panX",
+            wheelY: "zoomX",
+            paddingLeft: 0,
+            layout: root2.verticalLayout
+        })
+    );
+
+    var xAxis2 = chart2.xAxes.push(
+        am5xy.CategoryAxis.new(root2, {
+            categoryField: "mes",
+            renderer: am5xy.AxisRendererX.new(root2, {
+                minGridDistance: 30
+            }),
+            tooltip: am5.Tooltip.new(root2, {})
+        })
+    );
+    xAxis2.data.setAll(rendimientoData);
+
+    var yAxis2 = chart2.yAxes.push(
+        am5xy.ValueAxis.new(root2, {
+            renderer: am5xy.AxisRendererY.new(root2, {
+                strokeOpacity: 0.1
+            })
+        })
+    );
+
+    var series2 = chart2.series.push(
+        am5xy.LineSeries.new(root2, {
+            name: "Promedio",
+            xAxis: xAxis2,
+            yAxis: yAxis2,
+            valueYField: "promedio",
+            categoryXField: "mes",
+            tooltip: am5.Tooltip.new(root2, {
+                labelText: "{valueY}"
+            })
+        })
+    );
+
+    series2.strokes.template.setAll({
+        strokeWidth: 3
+    });
+
+    series2.bullets.push(function() {
+        return am5.Bullet.new(root2, {
+            sprite: am5.Circle.new(root2, {
+                radius: 5,
+                fill: series2.get("stroke").get("color")
+            })
+        });
+    });
+
+    series2.data.setAll(rendimientoData);
+
+    // Make stuff animate on load
+    chart.appear(1000, 100);
+    chart2.appear(1000, 100);
+    
+    // Actualizar gráficos cuando cambie el modo
+    document.getElementById('darkModeToggle').addEventListener('click', function() {
+        setTimeout(function() {
+            // Recrear los gráficos con el nuevo tema
+            root.dispose();
+            root2.dispose();
+            am5.ready(function() {
+                // Volver a ejecutar el código después de un pequeño delay
+                setTimeout(function() {
+                    am5.registry.rootElements.forEach(function(root) {
+                        root.dispose();
+                    });
+                    // Reiniciar la función completa
+                    am5.ready(function() {
+                        // Datos de Django
+                        const estudiantesData = JSON.parse('{{ estudiantes_data|safe }}');
+                        const rendimientoData = JSON.parse('{{ rendimiento_data|safe }}');
+                        
+                        // Detectar modo oscuro
+                        const isDarkMode = document.documentElement.classList.contains('dark');
+                        
+                        // Gráfico de Distribución de Estudiantes
+                        var root = am5.Root.new("estudiantesChart");
+                        
+                        // Aplicar tema según modo
+                        if (isDarkMode) {
+                            root.setThemes([
+                                am5themes_Animated.new(root),
+                                am5themes_Dark.new(root)
+                            ]);
+                        } else {
+                            root.setThemes([am5themes_Animated.new(root)]);
+                        }
+                
+                        var chart = root.container.children.push(
+                            am5xy.XYChart.new(root, {
+                                panX: false,
+                                panY: false,
+                                wheelX: "panX",
+                                wheelY: "zoomX",
+                                paddingLeft: 0,
+                                layout: root.verticalLayout
+                            })
+                        );
+                
+                        var xAxis = chart.xAxes.push(
+                            am5xy.CategoryAxis.new(root, {
+                                categoryField: "grado",
+                                renderer: am5xy.AxisRendererX.new(root, {
+                                    minGridDistance: 30
+                                }),
+                                tooltip: am5.Tooltip.new(root, {})
+                            })
+                        );
+                        xAxis.data.setAll(estudiantesData);
+                
+                        var yAxis = chart.yAxes.push(
+                            am5xy.ValueAxis.new(root, {
+                                renderer: am5xy.AxisRendererY.new(root, {
+                                    strokeOpacity: 0.1
+                                })
+                            })
+                        );
+                
+                        var series = chart.series.push(
+                            am5xy.ColumnSeries.new(root, {
+                                name: "Estudiantes",
+                                xAxis: xAxis,
+                                yAxis: yAxis,
+                                valueYField: "cantidad",
+                                categoryXField: "grado",
+                                tooltip: am5.Tooltip.new(root, {
+                                    labelText: "{valueY} estudiantes"
+                                })
+                            })
+                        );
+                
+                        series.columns.template.setAll({
+                            cornerRadiusTL: 5,
+                            cornerRadiusTR: 5,
+                            strokeOpacity: 0
+                        });
+                
+                        series.data.setAll(estudiantesData);
+                
+                        // Gráfico de Rendimiento Académico
+                        var root2 = am5.Root.new("rendimientoChart");
+                        
+                        // Aplicar tema según modo
+                        if (isDarkMode) {
+                            root2.setThemes([
+                                am5themes_Animated.new(root2),
+                                am5themes_Dark.new(root2)
+                            ]);
+                        } else {
+                            root2.setThemes([am5themes_Animated.new(root2)]);
+                        }
+                
+                        var chart2 = root2.container.children.push(
+                            am5xy.XYChart.new(root2, {
+                                panX: false,
+                                panY: false,
+                                wheelX: "panX",
+                                wheelY: "zoomX",
+                                paddingLeft: 0,
+                                layout: root2.verticalLayout
+                            })
+                        );
+                
+                        var xAxis2 = chart2.xAxes.push(
+                            am5xy.CategoryAxis.new(root2, {
+                                categoryField: "mes",
+                                renderer: am5xy.AxisRendererX.new(root2, {
+                                    minGridDistance: 30
+                                }),
+                                tooltip: am5.Tooltip.new(root2, {})
+                            })
+                        );
+                        xAxis2.data.setAll(rendimientoData);
+                
+                        var yAxis2 = chart2.yAxes.push(
+                            am5xy.ValueAxis.new(root2, {
+                                renderer: am5xy.AxisRendererY.new(root2, {
+                                    strokeOpacity: 0.1
+                                })
+                            })
+                        );
+                
+                        var series2 = chart2.series.push(
+                            am5xy.LineSeries.new(root2, {
+                                name: "Promedio",
+                                xAxis: xAxis2,
+                                yAxis: yAxis2,
+                                valueYField: "promedio",
+                                categoryXField: "mes",
+                                tooltip: am5.Tooltip.new(root2, {
+                                    labelText: "{valueY}"
+                                })
+                            })
+                        );
+                
+                        series2.strokes.template.setAll({
+                            strokeWidth: 3
+                        });
+                
+                        series2.bullets.push(function() {
+                            return am5.Bullet.new(root2, {
+                                sprite: am5.Circle.new(root2, {
+                                    radius: 5,
+                                    fill: series2.get("stroke").get("color")
+                                })
+                            });
+                        });
+                
+                        series2.data.setAll(rendimientoData);
+                
+                        // Make stuff animate on load
+                        chart.appear(1000, 100);
+                        chart2.appear(1000, 100);
+                    });
+                }, 100);
+            });
+        }, 200);
+    });
+});
+</script>
+{% endblock %} 
