@@ -51,7 +51,7 @@ urlpatterns = [
     path('usuarios/<int:pk>/', UsuarioRetrieveUpdateDestroyView.as_view(), name='usuario-detail'),
     path('usuarios/', UsuarioListView.as_view(), name='usuario-list-create'),
     path('api/notas/', include('notas.urls')),  
-    path('api/asignaturas/', include('asignaturas.urls')),  # URLs de asignaturas
+    path('api/asignaturas/', include('asignaturas.urls', namespace='api_asignaturas')),  # URLs de asignaturas con namespace diferente
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

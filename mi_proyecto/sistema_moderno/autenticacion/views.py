@@ -214,11 +214,13 @@ def login_view(request):
             
             # Asegurar que el usuario tenga un perfil
             try:
-                user_profile = user.perfil
-            except:
+                # Intentar obtener el perfil directamente de la base de datos
+                # esto evita problemas con caché de relaciones
+                perfil = Usuario.objects.get(user=user)
+            except Usuario.DoesNotExist:
                 # Si no tiene perfil, crear uno
                 if user.is_superuser or user.is_staff:
-                    user_profile = Usuario.objects.create(
+                    perfil = Usuario.objects.create(
                         user=user,
                         rol='admin',
                         nombres=user.first_name or user.username,
@@ -226,7 +228,7 @@ def login_view(request):
                         email=user.email
                     )
                 else:
-                    user_profile = Usuario.objects.create(
+                    perfil = Usuario.objects.create(
                         user=user,
                         rol='estudiante',
                         nombres=user.first_name or user.username,
@@ -236,15 +238,19 @@ def login_view(request):
                 print(f"Perfil creado para el usuario {user.username} durante el login")
             
             # Redirigir según el rol
-            if user.is_superuser or getattr(user_profile, 'rol', '') == 'admin':
+            if user.is_superuser or user.is_staff:
                 return redirect('admin_dashboard')
-            elif getattr(user_profile, 'rol', '') == 'profesor':
+            elif perfil.rol == 'admin':
+                return redirect('admin_dashboard')
+            elif perfil.rol == 'profesor':
                 return redirect('profesor_dashboard')
-            elif getattr(user_profile, 'rol', '') == 'estudiante':
+            elif perfil.rol == 'estudiante':
                 return redirect('estudiante_dashboard')
             else:
-                messages.warning(request, 'Usuario sin rol específico asignado')
-                return redirect('admin_dashboard')  # Por defecto, al dashboard de admin
+                messages.warning(request, 'Usuario sin rol específico asignado, se le ha asignado rol de estudiante por defecto')
+                perfil.rol = 'estudiante'
+                perfil.save()
+                return redirect('estudiante_dashboard')
         else:
             messages.error(request, 'Usuario o contraseña incorrectos')
     
@@ -253,8 +259,17 @@ def login_view(request):
 # Vista para registro con template y roles dinámicos
 @csrf_protect
 def register_view(request):
-    roles = Rol.objects.all()
+    # Obtener roles disponibles para el formulario
+    roles = list(Rol.objects.all().order_by('id'))
+    
+    # Para depuración
+    print(f"\n=== ROLES DISPONIBLES EN REGISTER VIEW ===")
+    print(f"Total de roles: {len(roles)}")
+    for rol in roles:
+        print(f"ID: {rol.id}, Nombre: '{rol.nombre}', Descripción: '{rol.descripcion}'")
+    
     context = {'roles': roles, 'form': {}}
+    
     if request.method == 'POST':
         nombres = request.POST.get('nombres', '').strip()
         email = request.POST.get('email', '').strip()
@@ -263,6 +278,13 @@ def register_view(request):
         password2 = request.POST.get('password2', '')
         accept_terms = request.POST.get('acceptTerms', None)
         errores = {}
+
+        # Para depuración
+        print(f"\n=== DATOS DEL FORMULARIO ===")
+        print(f"Nombres: {nombres}")
+        print(f"Email: {email}")
+        print(f"Rol ID: {rol_id}")
+        print(f"Términos aceptados: {accept_terms}")
 
         # Validaciones
         if not nombres or len(nombres) < 3:
@@ -285,52 +307,78 @@ def register_view(request):
             context['form'] = request.POST
             return render(request, 'autenticacion/register.html', context)
 
-        # Crear usuario
+        # Obtener nombre y apellido
+        nombres_split = nombres.split()
+        first_name = nombres_split[0]
+        last_name = ' '.join(nombres_split[1:]) if len(nombres_split) > 1 else ''
+
+        # Crear usuario con nombre de usuario único basado en email
+        username = email.split('@')[0]
+        # Si ya existe un usuario con ese username, añadir un número
+        base_username = username
+        counter = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
+
+        # Crear el usuario de Django
         user = User.objects.create(
-            username=email,
+            username=username,
             email=email,
             password=make_password(password1),
-            first_name=nombres.split()[0],
-            last_name=' '.join(nombres.split()[1:]) if len(nombres.split()) > 1 else ''
+            first_name=first_name,
+            last_name=last_name
         )
         
-        # Verificar si el usuario ya tiene un perfil (creado por la señal)
-        perfil_existe = False
+        # Obtener el rol seleccionado
+        rol_nombre = 'estudiante'  # Valor por defecto
         try:
-            perfil_existe = hasattr(user, 'perfil')
-        except:
-            perfil_existe = False
-            
-        if perfil_existe:
-            # Si ya existe un perfil, solo actualizamos el rol
-            if rol_id:
-                try:
-                    rol = Rol.objects.get(id=rol_id)
-                    user.perfil.rol = rol.nombre
-                    user.perfil.save()
-                except Rol.DoesNotExist:
-                    pass
-        else:
-            # Si no existe un perfil, lo creamos manualmente
+            rol = Rol.objects.get(id=int(rol_id))
+            rol_nombre = rol.nombre.lower()
+            print(f"Rol encontrado: {rol_nombre}")
+        except (ValueError, Rol.DoesNotExist) as e:
+            print(f"Error al buscar rol: {e}")
+            # Si hay error, usamos el rol por defecto
+        
+        # Verificar si el usuario ya tiene perfil (creado por la señal)
+        try:
+            if hasattr(user, 'perfil'):
+                # Actualizar el rol en el perfil existente
+                user.perfil.rol = rol_nombre
+                user.perfil.nombres = first_name
+                user.perfil.apellidos = last_name
+                user.perfil.email = email
+                user.perfil.save()
+                print(f"Perfil existente actualizado con rol: {rol_nombre}")
+            else:
+                # Crear perfil manualmente
+                Usuario.objects.create(
+                    user=user,
+                    rol=rol_nombre,
+                    nombres=first_name,
+                    apellidos=last_name,
+                    email=email
+                )
+                print(f"Nuevo perfil creado con rol: {rol_nombre}")
+        except Exception as e:
+            print(f"Error al gestionar perfil: {e}")
+            # En caso de error, intentar crear el perfil de todas formas
             try:
-                rol = Rol.objects.get(id=rol_id)
-                usuario = Usuario.objects.create(
-                    user=user,
-                    rol=rol.nombre,
-                    nombres=nombres,
-                    apellidos=' '.join(nombres.split()[1:]) if len(nombres.split()) > 1 else '',
+                Usuario.objects.create(
+            user=user,
+                    rol=rol_nombre,
+                    nombres=first_name,
+                    apellidos=last_name,
+                    email=email
                 )
-            except Rol.DoesNotExist:
-                # Si no se encuentra el rol, usamos el rol por defecto
-                usuario = Usuario.objects.create(
-                    user=user,
-                    nombres=nombres,
-                    apellidos=' '.join(nombres.split()[1:]) if len(nombres.split()) > 1 else '',
-                )
-            
+                print("Perfil creado en bloque de excepción")
+            except Exception as e2:
+                print(f"Error crítico al crear perfil: {e2}")
+        
         # Mensaje de éxito y redirección
         messages.success(request, '¡Registro exitoso! Ahora puedes iniciar sesión.')
         return redirect('login')
+    
     return render(request, 'autenticacion/register.html', context)
 
 @login_required
@@ -364,7 +412,7 @@ def admin_dashboard(request):
                     "grado": f"{grado}° Grado",
                     "cantidad": count
                 })
-        except:
+        except Exception:
             # Datos demo si hay error
             estudiantes_data = [
                 {"grado": "1° Grado", "cantidad": 15},
@@ -386,7 +434,7 @@ def admin_dashboard(request):
                     "mes": meses[i],
                     "promedio": round(promedio, 2)
                 })
-            except:
+            except Exception:
                 rendimiento_data.append({
                     "mes": meses[i],
                     "promedio": 7.5 # valor demo
@@ -395,8 +443,10 @@ def admin_dashboard(request):
         # Pagos pendientes (simulado)
         pagos_pendientes = 32
         porcentaje_pagos = 8.3
-    except:
+        
+    except Exception as e:
         # Valores por defecto si hay errores
+        print(f"Error al obtener estadísticas: {e}")
         total_estudiantes = 0
         total_profesores = 0
         total_cursos = 0

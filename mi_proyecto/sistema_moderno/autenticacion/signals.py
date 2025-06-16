@@ -32,5 +32,34 @@ def crear_perfil_usuario(sender, instance, created, **kwargs):
                     email=instance.email
                 )
             print(f"Perfil creado para el usuario {instance.username}")
+        else:
+            # Si ya existe el perfil, actualizamos los datos básicos para mantener sincronización
+            perfil = instance.perfil
+            actualizacion_necesaria = False
+            
+            # Sincronizar nombres
+            if perfil.nombres != instance.first_name and instance.first_name:
+                perfil.nombres = instance.first_name
+                actualizacion_necesaria = True
+            
+            # Sincronizar apellidos
+            if perfil.apellidos != instance.last_name and instance.last_name:
+                perfil.apellidos = instance.last_name
+                actualizacion_necesaria = True
+                
+            # Sincronizar email
+            if perfil.email != instance.email and instance.email:
+                perfil.email = instance.email
+                actualizacion_necesaria = True
+                
+            # Si el usuario es superuser o staff, debe tener rol admin
+            if (instance.is_superuser or instance.is_staff) and perfil.rol != 'admin':
+                perfil.rol = 'admin'
+                actualizacion_necesaria = True
+                
+            if actualizacion_necesaria:
+                perfil.save()
+                print(f"Perfil actualizado para el usuario {instance.username}")
+            
     except Exception as e:
-        print(f"Error al crear perfil de usuario: {e}") 
+        print(f"Error al gestionar perfil de usuario ({instance.username}): {e}") 

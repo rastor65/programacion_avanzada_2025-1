@@ -18,20 +18,95 @@
             background-color: rgba(255, 255, 255, 0.85);
             transition: all 0.5s ease;
         }
-        .form-container:hover {
-            backdrop-filter: blur(12px);
+        .form-container {
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
         .shake { animation: shake 0.5s; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); } 20%, 40%, 60%, 80% { transform: translateX(5px); } }
-        .input-field:focus + label, .input-field:not(:placeholder-shown) + label { transform: translateY(-1.5rem) scale(0.85); color: #3b82f6; }
+        .input-field:focus + label, .input-field:not(:placeholder-shown) + label { transform: translateY(-2.2rem) scale(0.85); color: #3b82f6; }
         .dropdown-roles { position: relative; }
-        .dropdown-list { display: none; position: absolute; z-index: 10; width: 100%; background: #fff; border-radius: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-top: 0.25rem; }
-        .dropdown-list.show { display: block; animation: fadeIn 0.2s; }
+        .dropdown-list { 
+            position: absolute !important; 
+            z-index: 9999 !important; 
+            width: 100% !important; 
+            background: #fff !important; 
+            border-radius: 0.5rem !important; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important; 
+            margin-top: 0.25rem !important; 
+            top: 100% !important; 
+            max-height: 200px !important;
+            overflow-y: auto !important;
+        }
+        .dropdown-list.show { 
+            display: block !important; 
+            animation: fadeIn 0.2s !important; 
+        }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px);} to { opacity: 1; transform: translateY(0);} }
-        .dropdown-item { cursor: pointer; padding: 0.75rem 1rem; display: flex; align-items: center; transition: background 0.2s; }
-        .dropdown-item:hover { background: #e0e7ff; }
+        .dropdown-item { 
+            cursor: pointer; 
+            padding: 0.75rem 1rem; 
+            display: flex; 
+            align-items: center; 
+            transition: background 0.2s; 
+        }
+        .dropdown-item:hover { 
+            background: #e0e7ff; 
+        }
         .dropdown-selected { border-bottom: 2px solid #6366f1; background: #f1f5f9; }
+        
+        /* Estilos para roles visuales */
+        .role-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .role-option {
+            flex: 1;
+            min-width: 100px;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .role-option:hover {
+            border-color: #93c5fd;
+            background-color: #eff6ff;
+            transform: translateY(-2px);
+        }
+        
+        .role-option.selected {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+        }
+        
+        .role-option i {
+            display: block;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .role-option .role-name {
+            font-weight: 600;
+        }
+        
+        /* Estilos para modo oscuro */
+        .dark .dropdown-list {
+            background: #374151;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .dark .dropdown-item:hover {
+            background: #4B5563;
+        }
+        .dark .dropdown-selected {
+            border-bottom: 2px solid #6366f1;
+            background: #374151;
+        }
         @keyframes bounce-in {
             0% { transform: scale(0.7); }
             60% { transform: scale(1.15); }
@@ -193,31 +268,24 @@
                             </div>
                         {% endif %}
                     </div>
-                    <!-- Dropdown personalizado para roles -->
-                    <div class="mb-4 relative dropdown-roles input-group">
+                    <!-- Selector de roles visuales -->
+                    <div class="mb-6">
+                        <label class="block text-gray-700 font-medium mb-2">Seleccione su rol:</label>
                         <input type="hidden" name="rol" id="registerRole" required value="{{ form.rol|default:'' }}">
-                        <div id="dropdownSelected" class="input-field w-full p-3 border-b-2 border-gray-300 focus:border-blue-500 outline-none bg-transparent transition duration-200 cursor-pointer flex items-center justify-between">
-                            <span id="dropdownSelectedText" class="text-gray-800"></span>
-                            <i class="fas fa-chevron-down text-gray-400 ml-2"></i>
-                        </div>
-                        <label id="dropdownLabel" for="registerRole" class="absolute left-3 top-3 text-gray-500 transition-all duration-200 pointer-events-none">Rol en el colegio</label>
-                        <div id="dropdownList" class="dropdown-list">
+                        
+                        <div class="role-selector flex flex-wrap gap-3">
+                            {% if roles %}
                             {% for rol in roles %}
-                                <div class="dropdown-item" data-id="{{ rol.id }}">
-                                    {% if 'estudiante' in rol.nombre|lower %}
-                                        <i class="fas fa-user-graduate text-blue-500 mr-2"></i>
-                                    {% elif 'profesor' in rol.nombre|lower %}
-                                        <i class="fas fa-chalkboard-teacher text-green-500 mr-2"></i>
-                                    {% elif 'padre' in rol.nombre|lower or 'tutor' in rol.nombre|lower %}
-                                        <i class="fas fa-user-tie text-orange-500 mr-2"></i>
-                                    {% else %}
-                                        <i class="fas fa-user-circle text-gray-400 mr-2"></i>
-                                    {% endif %}
-                                    <span class="font-semibold">{{ rol.nombre }}</span>
+                                <div class="role-option flex-1 min-w-[100px] border-2 border-gray-300 rounded-lg p-4 text-center cursor-pointer transition-all duration-300 hover:border-blue-400 hover:bg-blue-50" data-id="{{ rol.id }}">
+                                    <i class="fas {% if rol.nombre == 'estudiante' %}fa-user-graduate text-blue-500{% elif rol.nombre == 'profesor' %}fa-chalkboard-teacher text-green-500{% else %}fa-user-tie text-orange-500{% endif %} text-2xl mb-2 block"></i>
+                                    <span class="role-name font-semibold">{{ rol.nombre|title }}</span>
                                 </div>
                             {% endfor %}
+                            {% else %}
+                                <div class="p-3 text-red-500">No hay roles disponibles</div>
+                            {% endif %}
                         </div>
-                        <i class="fas fa-user-tag absolute right-3 top-3 text-gray-400"></i>
+                        
                         {% if errores.rol %}
                             <div class="fade-in mt-2 px-3 py-2 rounded bg-red-100 border-l-4 border-red-500 text-red-800 text-sm flex items-center">
                                 <i class="fas fa-exclamation-circle mr-2"></i> {{ errores.rol }}
@@ -273,69 +341,52 @@
     <script>
         // Dropdown personalizado para roles
         document.addEventListener('DOMContentLoaded', function() {
-            const dropdownSelected = document.getElementById('dropdownSelected');
-            const dropdownList = document.getElementById('dropdownList');
-            const dropdownSelectedText = document.getElementById('dropdownSelectedText');
-            const registerRole = document.getElementById('registerRole');
-            let selected = null;
-            const dropdownLabel = document.getElementById('dropdownLabel');
-            // Inicializa el texto del dropdown
-            let isOpen = false;
-
-            function updateDropdownLabel() {
-                if (registerRole.value || isOpen || dropdownSelected === document.activeElement) {
-                    dropdownLabel.style.transform = 'translateY(-1.5rem) scale(0.85)';
-                    dropdownLabel.style.color = '#3b82f6';
-                } else {
-                    dropdownLabel.style.transform = 'translateY(0) scale(1)';
-                    dropdownLabel.style.color = '#6b7280';
+            const roleOptions = document.querySelectorAll('.role-option');
+            const roleInput = document.getElementById('registerRole');
+            
+            console.log("Inicializando selector de roles");
+            console.log(`Encontrados ${roleOptions.length} opciones de roles`);
+            
+            // Seleccionar el rol si ya hay uno guardado
+            if (roleInput.value) {
+                const selectedOption = document.querySelector(`.role-option[data-id="${roleInput.value}"]`);
+                if (selectedOption) {
+                    selectedOption.classList.add('selected');
+                    selectedOption.style.borderColor = '#3b82f6';
+                    selectedOption.style.background = '#eff6ff';
                 }
             }
-
-            dropdownSelected.addEventListener('click', function(e) {
-                dropdownList.classList.toggle('show');
-                isOpen = !isOpen;
-                updateDropdownLabel();
+            
+            roleOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Quitar la selección de todos
+                    roleOptions.forEach(opt => {
+                        opt.classList.remove('selected');
+                        opt.style.borderColor = '#e5e7eb';
+                        opt.style.background = 'transparent';
             });
 
-            dropdownSelected.addEventListener('focus', function() {
-                updateDropdownLabel();
-            });
-
-            dropdownSelected.addEventListener('blur', function() {
-                setTimeout(() => {
-                    isOpen = false;
-                    updateDropdownLabel();
-                }, 200);
-            });
-
-            dropdownList.querySelectorAll('.dropdown-item').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    selected = this.getAttribute('data-id');
-                    registerRole.value = selected;
-                    dropdownSelectedText.innerHTML = this.innerHTML;
-                    dropdownList.classList.remove('show');
-                    dropdownSelected.classList.add('dropdown-selected');
-                    isOpen = false;
-                    updateDropdownLabel();
+                    // Marcar este como seleccionado
+                    this.classList.add('selected');
+                    this.style.borderColor = '#3b82f6';
+                    this.style.background = '#eff6ff';
                     
-                    // Añadir animación al seleccionar
-                    dropdownSelected.classList.add('bounce-in');
-                    setTimeout(() => dropdownSelected.classList.remove('bounce-in'), 300);
+                    // Actualizar el valor del input oculto
+                    roleInput.value = this.getAttribute('data-id');
+                    console.log(`Rol seleccionado: ID=${this.getAttribute('data-id')}`);
+                    
+                    // Efecto visual de selección
+                    this.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                }, 200);
+                    
+                    // Añadir clase bounce-in para animación
+                    this.classList.add('bounce-in');
+                    setTimeout(() => this.classList.remove('bounce-in'), 300);
                 });
             });
 
-            document.addEventListener('click', function(e) {
-                if (!dropdownSelected.contains(e.target) && !dropdownList.contains(e.target)) {
-                    dropdownList.classList.remove('show');
-                    isOpen = false;
-                    updateDropdownLabel();
-                }
-            });
-
-            // Inicializar el estado del label
-            updateDropdownLabel();
-            
             // Animación de entrada para el formulario
             const form = document.querySelector('.register-form');
             form.classList.add('fade-in');
@@ -346,7 +397,7 @@
             const label = input.parentElement.querySelector('label');
             function updateLabel() {
                 if (input.value) {
-                    label.style.transform = 'translateY(-1.5rem) scale(0.85)';
+                    label.style.transform = 'translateY(-2.2rem) scale(0.85)';
                     label.style.color = '#3b82f6';
                 } else {
                     label.style.transform = 'translateY(0) scale(1)';
@@ -369,7 +420,7 @@
                 input.parentElement.classList.remove('focused');
             });
         });
-        
+
         // Función para mostrar/ocultar contraseña
         function togglePasswordVisibility(inputId, icon) {
             const passwordInput = document.getElementById(inputId);

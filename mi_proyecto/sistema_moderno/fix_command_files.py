@@ -1,53 +1,60 @@
 #!/usr/bin/env python
 """
-Script para corregir archivos con caracteres nulos en la carpeta management/commands
+Script para arreglar archivos con bytes nulos que causan problemas en las migraciones.
+Ejecutar con: python fix_command_files.py
 """
 
 import os
-import glob
+import sys
 
 def fix_null_bytes():
     # Rutas a revisar
-    paths = [
-        'autenticacion/management/__init__.py',
-        'autenticacion/management/commands/__init__.py',
-        'autenticacion/management/commands/check_auth.py',
+    paths_to_check = [
+        'autenticacion/management/commands',
+        'autenticacion/management',
+        'autenticacion/migrations'
     ]
     
-    for path in paths:
-        if os.path.exists(path):
-            print(f"Corrigiendo archivo: {path}")
-            try:
-                # Leer el archivo y eliminar caracteres nulos
-                with open(path, 'rb') as f:
-                    content = f.read()
-                
-                # Eliminar caracteres nulos
-                content = content.replace(b'\x00', b'')
-                
-                # Escribir el contenido corregido
-                with open(path, 'wb') as f:
-                    f.write(content)
-                
-                print(f"  ✓ Archivo corregido")
-            except Exception as e:
-                print(f"  ✗ Error al corregir el archivo: {e}")
-        else:
-            print(f"El archivo {path} no existe")
+    fixed_files = 0
     
-    # Crear archivos vacíos si no existen
-    for path in paths:
-        directory = os.path.dirname(path)
-        if not os.path.exists(directory):
-            os.makedirs(directory, exist_ok=True)
-            print(f"Creado directorio: {directory}")
-        
-        if not os.path.exists(path):
-            with open(path, 'w') as f:
-                f.write("# Archivo generado automáticamente\n")
-            print(f"Creado archivo vacío: {path}")
+    for base_path in paths_to_check:
+        if not os.path.exists(base_path):
+            print(f"La ruta {base_path} no existe, saltando...")
+            continue
+            
+        for root, dirs, files in os.walk(base_path):
+            for file in files:
+                if file.endswith('.py'):
+                    file_path = os.path.join(root, file)
+                    
+                    try:
+                        # Intentar abrir el archivo en modo binario
+                        with open(file_path, 'rb') as f:
+                            content = f.read()
+                        
+                        # Verificar si hay bytes nulos
+                        if b'\x00' in content:
+                            print(f"Encontrados bytes nulos en {file_path}, corrigiendo...")
+                            
+                            # Eliminar bytes nulos
+                            content = content.replace(b'\x00', b'')
+                            
+                            # Guardar el archivo corregido
+                            with open(file_path, 'wb') as f:
+                                f.write(content)
+                                
+                            fixed_files += 1
+                            print(f"✅ Archivo corregido: {file_path}")
+                    except Exception as e:
+                        print(f"❌ Error al procesar {file_path}: {str(e)}")
+    
+    print(f"\nTotal de archivos corregidos: {fixed_files}")
+    return fixed_files
 
 if __name__ == "__main__":
-    print("Iniciando corrección de archivos con caracteres nulos...")
-    fix_null_bytes()
-    print("Proceso completado.") 
+    print("Buscando y corrigiendo archivos con bytes nulos...")
+    fixed = fix_null_bytes()
+    if fixed > 0:
+        print("Se recomienda ejecutar 'python manage.py migrate' nuevamente.")
+    else:
+        print("No se encontraron archivos con problemas de bytes nulos.") 

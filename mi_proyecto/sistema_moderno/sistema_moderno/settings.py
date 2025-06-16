@@ -58,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'autenticacion.middleware.JWTAuthCookieMiddleware', 
+    'autenticacion.middleware.RolMiddleware',  # Añadir este middleware para controlar accesos por rol
 ]
 
 ROOT_URLCONF = 'sistema_moderno.urls'

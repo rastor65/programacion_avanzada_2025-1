@@ -23,6 +23,12 @@ class Rol(models.Model):
 
     def __str__(self):
         return self.nombre
+    
+    def save(self, *args, **kwargs):
+        # Convertir el nombre a minúsculas antes de guardar para evitar duplicados por case sensitivity
+        if self.nombre:
+            self.nombre = self.nombre.lower()
+        super().save(*args, **kwargs)
 
 
 # Usuario:

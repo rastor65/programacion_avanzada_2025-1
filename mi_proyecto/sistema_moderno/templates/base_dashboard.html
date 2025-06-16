@@ -30,9 +30,11 @@
         <!-- Bottom Section -->
         <div class="absolute bottom-0 w-full p-4 border-t border-gray-200 dark:border-gray-700">
             <div class="flex justify-between items-center">
-                <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300">
-                    <i class="fas fa-moon dark:hidden"></i>
-                    <i class="fas fa-sun hidden dark:block text-yellow-300"></i>
+                <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300" title="Cambiar tema">
+                    <!-- Icono de luna (visible en modo claro) -->
+                    <i class="fas fa-moon text-gray-600 dark:hidden"></i>
+                    <!-- Icono de sol (visible en modo oscuro) -->
+                    <i class="fas fa-sun text-yellow-300 hidden dark:block"></i>
                 </button>
                 <a href="{% url 'logout' %}" class="text-sm text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Cerrar sesión</a>
             </div>
@@ -80,7 +82,13 @@
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     }
     
-    /* Estilos específicos para modo claro */
+    /* Estilos para modo claro (default) */
+    body {
+        background-color: #f3f4f6;
+    }
+    .sidebar {
+        background-color: #ffffff;
+    }
     .card {
         background-color: #ffffff;
         border-color: #e5e7eb;
@@ -102,32 +110,44 @@
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
     
-    /* Estilos para modo oscuro */
-    .dark {
+    /* Estilos para modo oscuro - usando la clase dark en el elemento html */
+    :root.dark body,
+    html.dark body {
         background-color: #1a202c;
         color: #f7fafc;
     }
-    .dark .card {
+    :root.dark .sidebar,
+    html.dark .sidebar {
         background-color: #2d3748;
-        border-color: #4a5568;
+    }
+    :root.dark .card,
+    html.dark .card {
+        background-color: #2d3748 !important;
+        border-color: #4a5568 !important;
         color: #e2e8f0;
     }
-    .dark .bg-white {
+    :root.dark .bg-white,
+    html.dark .bg-white {
         background-color: #2d3748 !important;
     }
-    .dark .text-gray-800 {
+    :root.dark .text-gray-800,
+    html.dark .text-gray-800 {
         color: #f7fafc !important;
     }
-    .dark .text-gray-600 {
+    :root.dark .text-gray-600,
+    html.dark .text-gray-600 {
         color: #cbd5e0 !important;
     }
-    .dark .text-gray-500 {
+    :root.dark .text-gray-500,
+    html.dark .text-gray-500 {
         color: #a0aec0 !important;
     }
-    .dark .border-gray-200 {
+    :root.dark .border-gray-200,
+    html.dark .border-gray-200 {
         border-color: #4a5568 !important;
     }
-    .dark .shadow {
+    :root.dark .shadow,
+    html.dark .shadow {
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
     }
     
@@ -145,13 +165,13 @@
     }
     
     /* Estilos para menú de navegación - modo oscuro */
-    .dark .menu-item {
+    html.dark .menu-item {
         color: #e2e8f0;
     }
-    .dark .menu-item:hover:not(.active) {
+    html.dark .menu-item:hover:not(.active) {
         background-color: #4a5568;
     }
-    .dark .menu-item.active {
+    html.dark .menu-item.active {
         background-color: rgba(66, 153, 225, 0.3);
         border-left: 4px solid #63b3ed;
         color: #90cdf4;
@@ -170,14 +190,14 @@
     }
     
     /* Estilos para tablas - modo oscuro */
-    .dark table {
+    html.dark table {
         background-color: #2d3748;
     }
-    .dark thead th {
+    html.dark thead th {
         background-color: #1a202c;
         color: #e2e8f0;
     }
-    .dark tbody tr:hover {
+    html.dark tbody tr:hover {
         background-color: #4a5568;
     }
 </style>
@@ -185,39 +205,53 @@
 
 {% block extra_js %}
 <script>
-    // Verificar si hay una preferencia guardada
-    const darkMode = localStorage.getItem('darkMode') === 'true';
-    
-    // Aplicar modo oscuro si está guardado
-    if (darkMode) {
-        document.documentElement.classList.add('dark');
-        const icon = document.querySelector('#darkModeToggle i.fa-moon');
-        if (icon) {
-            icon.classList.add('hidden');
+    // Función para aplicar el tema
+    function applyTheme(isDark) {
+        if (isDark) {
+            document.documentElement.classList.add('dark');
+            document.body.classList.add('dark-mode'); // Clase adicional para compatibilidad
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.body.classList.remove('dark-mode');
         }
-        const sunIcon = document.querySelector('#darkModeToggle i.fa-sun');
-        if (sunIcon) {
-            sunIcon.classList.remove('hidden');
-        }
-    }
-    
-    // Dark mode toggle
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    darkModeToggle.addEventListener('click', () => {
-        document.documentElement.classList.toggle('dark');
-        const isDark = document.documentElement.classList.contains('dark');
+        
+        // Actualizar atributo data-theme para compatibilidad con frameworks
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        
+        // Guardar preferencia
         localStorage.setItem('darkMode', isDark);
         
-        // Mostrar/ocultar iconos
-        const moonIcon = document.querySelector('#darkModeToggle i.fa-moon');
-        const sunIcon = document.querySelector('#darkModeToggle i.fa-sun');
+        // Disparar evento para otros componentes
+        document.dispatchEvent(new CustomEvent('themeChanged', { detail: { isDark } }));
         
-        if (isDark) {
-            moonIcon.classList.add('hidden');
-            sunIcon.classList.remove('hidden');
-        } else {
-            moonIcon.classList.remove('hidden');
-            sunIcon.classList.add('hidden');
+        console.log("Tema aplicado:", isDark ? "oscuro" : "claro");
+    }
+    
+    // Inicializar tema al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Inicializando tema");
+        
+        // Verificar preferencia guardada
+        const savedPreference = localStorage.getItem('darkMode');
+        console.log("Preferencia guardada:", savedPreference);
+        
+        // Aplicar tema según preferencia (por defecto claro)
+        const isDark = savedPreference === 'true';
+        applyTheme(isDark);
+        
+        // Configurar el botón de cambio de tema
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        if (darkModeToggle) {
+            darkModeToggle.addEventListener('click', function() {
+                // Obtener estado actual y cambiarlo
+                const currentState = document.documentElement.classList.contains('dark');
+                const newState = !currentState;
+                
+                console.log("Cambiando tema de", currentState ? "oscuro" : "claro", "a", newState ? "oscuro" : "claro");
+                
+                // Aplicar nuevo estado
+                applyTheme(newState);
+            });
         }
     });
 </script>
