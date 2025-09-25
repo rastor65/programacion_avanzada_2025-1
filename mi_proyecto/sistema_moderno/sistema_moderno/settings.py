@@ -47,9 +47,11 @@ INSTALLED_APPS = [
     'notas', # Aplicación de notas
     'asignaturas', # Aplicación de asignaturas
     'drf_yasg', # Swagger
+    'corsheaders', # CORS
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', # CORS - debe ir primero
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -58,7 +60,15 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'autenticacion.middleware.JWTAuthCookieMiddleware', 
-    'autenticacion.middleware.RolMiddleware',  # Añadir este middleware para controlar accesos por rol
+    'autenticacion.middleware.RolMiddleware',
+    # Añadir este middleware para controlar accesos por rol
+]
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
 ]
 
 ROOT_URLCONF = 'sistema_moderno.urls'
