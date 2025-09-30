@@ -3,8 +3,8 @@ from . import views
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
-    # URLs de autenticación
-    path('', views.login_view, name='login'),
+    # URLs de autenticación (JWT como principal). Se elimina la vista de login por plantilla/API
+    # path('', views.login_view, name='login'),
     path('register/', views.register_view, name='register'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
     

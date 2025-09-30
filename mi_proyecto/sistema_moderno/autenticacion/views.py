@@ -191,70 +191,63 @@ class UsuarioDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UsuarioSerializer
     permission_classes = [IsAuthenticated]
 
-# Vista para login con template
 @csrf_protect
 def login_view(request):
+    # Endpoint orientado a API: responde en JSON y no renderiza plantillas
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        
-        # Intentar autenticar primero con el nombre de usuario
+        # Soporta formulario (x-www-form-urlencoded) y JSON crudo
+        try:
+            body_data = json.loads(request.body or '{}')
+        except Exception:
+            body_data = {}
+
+        username = request.POST.get('username') or body_data.get('username')
+        password = request.POST.get('password') or body_data.get('password')
+
+        if not username or not password:
+            return JsonResponse({"detail": "Faltan credenciales (username y password)"}, status=400)
+
         user = authenticate(request, username=username, password=password)
-        
-        # Si no funciona, verificar si es un correo electrónico
         if user is None and '@' in username:
             try:
                 user_obj = User.objects.get(email=username)
                 user = authenticate(request, username=user_obj.username, password=password)
             except User.DoesNotExist:
                 user = None
-        
-        if user is not None:
-            login(request, user)
-            
-            # Asegurar que el usuario tenga un perfil
-            try:
-                # Intentar obtener el perfil directamente de la base de datos
-                # esto evita problemas con caché de relaciones
-                perfil = Usuario.objects.get(user=user)
-            except Usuario.DoesNotExist:
-                # Si no tiene perfil, crear uno
-                if user.is_superuser or user.is_staff:
-                    perfil = Usuario.objects.create(
-                        user=user,
-                        rol='admin',
-                        nombres=user.first_name or user.username,
-                        apellidos=user.last_name or '',
-                        email=user.email
-                    )
-                else:
-                    perfil = Usuario.objects.create(
-                        user=user,
-                        rol='estudiante',
-                        nombres=user.first_name or user.username,
-                        apellidos=user.last_name or '',
-                        email=user.email
-                    )
-                print(f"Perfil creado para el usuario {user.username} durante el login")
-            
-            # Redirigir según el rol
-            if user.is_superuser or user.is_staff:
-                return redirect('admin_dashboard')
-            elif perfil.rol == 'admin':
-                return redirect('admin_dashboard')
-            elif perfil.rol == 'profesor':
-                return redirect('profesor_dashboard')
-            elif perfil.rol == 'estudiante':
-                return redirect('estudiante_dashboard')
-            else:
-                messages.warning(request, 'Usuario sin rol específico asignado, se le ha asignado rol de estudiante por defecto')
-                perfil.rol = 'estudiante'
-                perfil.save()
-                return redirect('estudiante_dashboard')
-        else:
-            messages.error(request, 'Usuario o contraseña incorrectos')
-    
-    return render(request, 'autenticacion/login.html')
+
+        if user is None:
+            return JsonResponse({"detail": "Usuario o contraseña incorrectos"}, status=401)
+
+        login(request, user)
+
+        # Garantizar perfil mínimo
+        try:
+            perfil = Usuario.objects.get(user=user)
+        except Usuario.DoesNotExist:
+            perfil = Usuario.objects.create(
+                user=user,
+                rol='admin' if (user.is_superuser or user.is_staff) else 'estudiante',
+                nombres=user.first_name or user.username,
+                apellidos=user.last_name or '',
+                email=user.email
+            )
+
+        return JsonResponse({
+            "detail": "Login exitoso",
+            "usuario": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "rol": perfil.rol,
+            }
+        })
+
+    # GET u otros métodos: orientar a usar los endpoints JWT
+    return JsonResponse({
+        "detail": "Usa los endpoints JWT para autenticación",
+        "token_obtain": "/api/auth/api/token/",
+        "token_refresh": "/api/auth/api/token/refresh/"
+    })
 
 # Vista para registro con template y roles dinámicos
 @csrf_protect

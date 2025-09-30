@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-58s3z@bhqdeuu%*3yu&*gm_5cdt%zsv17^k=0bnfg5e@7c(9_n
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -63,6 +63,7 @@ MIDDLEWARE = [
     'autenticacion.middleware.RolMiddleware',
     # Añadir este middleware para controlar accesos por rol
 ]
+
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
@@ -138,6 +139,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Media files (user-uploaded content)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

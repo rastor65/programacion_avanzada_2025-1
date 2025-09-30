@@ -42,16 +42,14 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('auth/', include('autenticacion.urls')),
-    path('asignaturas/', include('asignaturas.urls')),
-    path('notas/', include('notas.urls')),
-    path('comportamiento/', include('comportamiento.urls')),
-    path('asistencias/', include('asistencias.urls')),
-    path('notificaciones/', include('notificaciones.urls')),
-    path('usuarios/<int:pk>/', UsuarioRetrieveUpdateDestroyView.as_view(), name='usuario-detail'),
-    path('usuarios/', UsuarioListView.as_view(), name='usuario-list-create'),
-    path('api/notas/', include('notas.urls')),  
-    path('api/asignaturas/', include('asignaturas.urls', namespace='api_asignaturas')),  # URLs de asignaturas con namespace diferente
+    path('api/auth/', include('autenticacion.urls')),
+    path('api/asignaturas/', include('asignaturas.urls')),
+    path('api/notas/', include('notas.urls')),
+    path('api/comportamiento/', include('comportamiento.urls')),
+    path('api/asistencias/', include('asistencias.urls')),
+    path('api/notificaciones/', include('notificaciones.urls')),
+    path('api/usuarios/<int:pk>/', UsuarioRetrieveUpdateDestroyView.as_view(), name='usuario-detail'),
+    path('api/usuarios/', UsuarioListView.as_view(), name='usuario-list-create'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
